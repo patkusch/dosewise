@@ -72,3 +72,9 @@ def test_unowned_table_scores_higher_than_the_same_table_with_an_owner():
     f2, _ = engine.score(owned, base)
     mine = {(f.asset, f.change): f for f in f2}[("warehouse.web_events", "type_changed")]
     assert by[("warehouse.web_events", "type_changed")].risk > mine.risk
+
+
+def test_missing_file_gives_a_plain_message_not_a_traceback():
+    r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", "nope.json", "--baseline", f"{D}/baseline.json"],
+                       capture_output=True, text=True)
+    assert r.returncode == 2 and "can't find nope.json" in r.stderr and "Traceback" not in r.stderr
