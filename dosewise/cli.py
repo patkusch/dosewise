@@ -12,6 +12,7 @@ def main(argv=None):
     p.add_argument("--baseline", required=True, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")
     p.add_argument("--json", help="also write results here")
+    p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
     a = p.parse_args(argv)
     cfg = engine.load(a.config) if a.config else None
     findings, ref = engine.score(engine.load(a.catalog), engine.load(a.baseline), cfg)
@@ -19,6 +20,10 @@ def main(argv=None):
     if a.json:
         with open(a.json, "w") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
+    if a.fail_on:
+        hit = {"Act": ("Act",), "Monitor": ("Act", "Monitor")}[a.fail_on]
+        if any(f.band in hit for f in findings):
+            return 1
     return 0
 
 

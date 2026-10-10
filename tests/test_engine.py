@@ -55,3 +55,13 @@ def test_cli_runs():
 
 def test_unmeasured_consumers_never_make_exposure_zero():
     assert by[("postgres.addresses", "column_removed")].exposure > 0
+
+
+def _cli(*extra):
+    return subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json", *extra],
+                          capture_output=True, text=True, cwd=os.path.join(D, ".."))
+
+
+def test_fail_on_act_exits_nonzero_when_something_needs_action():
+    assert _cli("--fail-on", "Act").returncode == 1
+    assert _cli().returncode == 0
