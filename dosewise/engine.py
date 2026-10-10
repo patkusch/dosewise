@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 DEFAULT_CONFIG = {
     "max_hops": 4,
     "hop_decay": 0.5,
-    "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2},
+    "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2, "table_removed": 1.0},
     "receptor_by_tag": {"pii": 2.0, "finance": 1.8, "executive": 1.5, "dashboard": 1.3},
     "uncertainty_unknown_column_lineage": 0.5,
     "uncertainty_unknown_usage": 0.5,
@@ -52,6 +52,9 @@ def load(path):
 def diff_schemas(baseline: dict, assets: dict):
     """Real changes only: what is different from the saved baseline."""
     out = []
+    for aid, old in baseline.items():
+        if aid not in assets:
+            out.append((aid, "table_removed", sorted(old), len(old)))
     for aid, asset in assets.items():
         old, new = baseline.get(aid), asset["schema"]
         if old is None:
@@ -136,7 +139,7 @@ def score(catalog, baseline, cfg=None):
         if seen:
             unc += cfg["uncertainty_unknown_usage"] * unmeasured / len(seen)
             unc += cfg["uncertainty_unknown_column_lineage"] * unknown_edges / max(1, sum(1 for e in edges if e["from"] == aid))
-        a = assets[aid]
+        a = assets.get(aid, {})
         if "owner" in a and not a["owner"]:
             unc += cfg["uncertainty_no_owner"]
             reasons.append("nobody owns this table, so nobody is accountable: missing evidence raises uncertainty")

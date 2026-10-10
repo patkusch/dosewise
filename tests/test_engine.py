@@ -78,3 +78,10 @@ def test_missing_file_gives_a_plain_message_not_a_traceback():
     r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", "nope.json", "--baseline", f"{D}/baseline.json"],
                        capture_output=True, text=True)
     assert r.returncode == 2 and "can't find nope.json" in r.stderr and "Traceback" not in r.stderr
+
+
+def test_a_dropped_table_is_scored_like_every_column_removed():
+    gone = {**cat, "assets": [a for a in cat["assets"] if a["id"] != "warehouse.customers"]}
+    f, _ = engine.score(gone, base)
+    d = {(x.asset, x.change): x for x in f}[("warehouse.customers", "table_removed")]
+    assert d.dose == 1.0 and d.risk > by[("warehouse.customers", "column_removed")].risk
