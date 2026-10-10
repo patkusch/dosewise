@@ -22,6 +22,7 @@ DEFAULT_CONFIG = {
     "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
     "monitor_fraction": 0.25,
     "exposure_floor": 0.3,
+    "uncertainty_no_owner": 0.5,
 }
 
 
@@ -135,6 +136,10 @@ def score(catalog, baseline, cfg=None):
         if seen:
             unc += cfg["uncertainty_unknown_usage"] * unmeasured / len(seen)
             unc += cfg["uncertainty_unknown_column_lineage"] * unknown_edges / max(1, sum(1 for e in edges if e["from"] == aid))
+        a = assets[aid]
+        if "owner" in a and not a["owner"]:
+            unc += cfg["uncertainty_no_owner"]
+            reasons.append("nobody owns this table, so nobody is accountable: missing evidence raises uncertainty")
         if not seen:
             reasons.append("nothing downstream reads the changed columns")
         else:

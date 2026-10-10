@@ -16,7 +16,7 @@ Risk = Hazard x Dose x Exposure x Receptor sensitivity x Uncertainty
 - **Dose**: what share of the table's columns the change touches.
 - **Exposure**: how much the tables downstream are actually queried, counting less the further away they are.
 - **Receptor sensitivity**: who is on the other end. Personal data, finance and executive dashboards weigh more.
-- **Uncertainty**: missing evidence raises the score. A table with no usage data is not treated as unused, because "nobody uses it" and "nobody measured it" look the same.
+- **Uncertainty**: missing evidence raises the score, including a table with no owner (if you list an `owner` field and leave it empty). A table with no usage data is not treated as unused, because "nobody uses it" and "nobody measured it" look the same.
 
 Problems that were already there and have not changed score exactly zero. A healthy catalog gives a quiet report.
 

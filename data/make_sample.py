@@ -2,6 +2,7 @@
 import json
 
 def t(n, **kw):
+    kw.setdefault("owner", "data-team")
     return {"id": n, "platform": n.split(".")[0], "name": n, "schema": {f"c{i}": "string" for i in range(kw.pop("cols", 9))}, **kw}
 
 assets = [
@@ -10,7 +11,7 @@ assets = [
     t("warehouse.customers", usage={"queries_30d": 5200}, tags=["pii"]),
     t("warehouse.orders", usage={"queries_30d": 8000}, tags=["finance"]),
     t("warehouse.refunds", usage={"queries_30d": 300}),
-    t("warehouse.web_events", usage={"queries_30d": 40}),
+    t("warehouse.web_events", usage={"queries_30d": 40}, owner=None),
 ]
 for i in range(6):                      # postgres.addresses has lots of downstream, nobody reads it
     assets.append(t(f"postgres.stage_{i}", usage={"queries_30d": None}))

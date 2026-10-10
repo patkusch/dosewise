@@ -65,3 +65,10 @@ def _cli(*extra):
 def test_fail_on_act_exits_nonzero_when_something_needs_action():
     assert _cli("--fail-on", "Act").returncode == 1
     assert _cli().returncode == 0
+
+
+def test_unowned_table_scores_higher_than_the_same_table_with_an_owner():
+    owned = {**cat, "assets": [dict(a, owner="x") if a["id"] == "warehouse.web_events" else a for a in cat["assets"]]}
+    f2, _ = engine.score(owned, base)
+    mine = {(f.asset, f.change): f for f in f2}[("warehouse.web_events", "type_changed")]
+    assert by[("warehouse.web_events", "type_changed")].risk > mine.risk

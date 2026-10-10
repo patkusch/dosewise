@@ -16,7 +16,8 @@
    "usage": {
     "queries_30d": 2400
    },
-   "tags": []
+   "tags": [],
+   "owner": "data-team"
   },
   {
    "id": "postgres.addresses",
@@ -33,7 +34,8 @@
    },
    "usage": {
     "queries_30d": 12
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "warehouse.customers",
@@ -53,7 +55,8 @@
    },
    "tags": [
     "pii"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "warehouse.orders",
@@ -75,7 +78,8 @@
    },
    "tags": [
     "finance"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "warehouse.refunds",
@@ -94,7 +98,8 @@
    },
    "usage": {
     "queries_30d": 300
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "warehouse.web_events",
@@ -113,7 +118,8 @@
    },
    "usage": {
     "queries_30d": 40
-   }
+   },
+   "owner": null
   },
   {
    "id": "postgres.stage_0",
@@ -132,7 +138,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "postgres.stage_1",
@@ -151,7 +158,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "postgres.stage_2",
@@ -170,7 +178,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "postgres.stage_3",
@@ -189,7 +198,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "postgres.stage_4",
@@ -208,7 +218,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "postgres.stage_5",
@@ -227,7 +238,8 @@
    },
    "usage": {
     "queries_30d": null
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "looker.revenue_board",
@@ -249,7 +261,8 @@
    },
    "tags": [
     "executive"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "looker.address_map",
@@ -268,7 +281,8 @@
    },
    "usage": {
     "queries_30d": 600
-   }
+   },
+   "owner": "data-team"
   },
   {
    "id": "looker.churn",
@@ -290,7 +304,8 @@
    },
    "tags": [
     "pii"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "warehouse.sessions",
@@ -312,7 +327,8 @@
    },
    "standing_issues": [
     "nullable key"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "warehouse.promo_codes",
@@ -335,7 +351,8 @@
    "standing_issues": [
     "no description",
     "mixed case names"
-   ]
+   ],
+   "owner": "data-team"
   },
   {
    "id": "warehouse.legacy_fx",
@@ -357,7 +374,8 @@
    },
    "standing_issues": [
     "no owner"
-   ]
+   ],
+   "owner": "data-team"
   }
  ],
  "edges": [
