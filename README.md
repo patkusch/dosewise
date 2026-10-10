@@ -44,5 +44,5 @@ The action line is not fitted to the data. It comes from a written reference cas
 ## Tests
 
 ```bash
-pip install pytest && pytest
+pip install pytest && python -m pytest
 ```
