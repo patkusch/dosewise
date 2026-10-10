@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+
 
 def markdown(findings, ref):
     acts = [f for f in findings if f.band == "Act"]
@@ -20,3 +22,11 @@ def markdown(findings, ref):
         lines += ["## Scored zero", "", "These are real, but nothing about them changed, so they are not today's problem:", ""]
         lines += [f"- {f.asset}: {f.change.split(':')[-1]}" for f in zero]
     return "\n".join(lines) + "\n"
+
+
+def write_csv(findings, path):
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["rank", "naive_rank", "asset", "change", "risk", "band", "why"])
+        for x in findings:
+            w.writerow([x.rank, x.naive_rank, x.asset, x.change, x.risk, x.band, "; ".join(x.reasons)])

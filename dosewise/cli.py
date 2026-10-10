@@ -11,6 +11,7 @@ def main(argv=None):
     p.add_argument("--catalog", required=True, help="catalog JSON: assets and lineage edges")
     p.add_argument("--baseline", required=True, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")
+    p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
     a = p.parse_args(argv)
@@ -27,6 +28,8 @@ def main(argv=None):
     if a.json:
         with open(a.json, "w") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
+    if a.csv:
+        report.write_csv(findings, a.csv)
     if a.fail_on:
         hit = {"Act": ("Act",), "Monitor": ("Act", "Monitor")}[a.fail_on]
         if any(f.band in hit for f in findings):

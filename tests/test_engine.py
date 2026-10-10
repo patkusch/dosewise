@@ -85,3 +85,10 @@ def test_a_dropped_table_is_scored_like_every_column_removed():
     f, _ = engine.score(gone, base)
     d = {(x.asset, x.change): x for x in f}[("warehouse.customers", "table_removed")]
     assert d.dose == 1.0 and d.risk > by[("warehouse.customers", "column_removed")].risk
+
+
+def test_csv_has_one_row_per_finding(tmp_path):
+    out = tmp_path / "r.csv"
+    assert _cli("--csv", str(out)).returncode == 0
+    lines = out.read_text().strip().splitlines()
+    assert lines[0].startswith("rank,") and len(lines) == len(F) + 1
