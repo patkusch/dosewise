@@ -1,0 +1,420 @@
+{
+ "assets": [
+  {
+   "id": "warehouse.addresses",
+   "platform": "warehouse",
+   "name": "warehouse.addresses",
+   "schema": {
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 2400
+   },
+   "tags": []
+  },
+  {
+   "id": "postgres.addresses",
+   "platform": "postgres",
+   "name": "postgres.addresses",
+   "schema": {
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 12
+   }
+  },
+  {
+   "id": "warehouse.customers",
+   "platform": "warehouse",
+   "name": "warehouse.customers",
+   "schema": {
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 5200
+   },
+   "tags": [
+    "pii"
+   ]
+  },
+  {
+   "id": "warehouse.orders",
+   "platform": "warehouse",
+   "name": "warehouse.orders",
+   "schema": {
+    "c0": "int",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 8000
+   },
+   "tags": [
+    "finance"
+   ]
+  },
+  {
+   "id": "warehouse.refunds",
+   "platform": "warehouse",
+   "name": "warehouse.refunds",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 300
+   }
+  },
+  {
+   "id": "warehouse.web_events",
+   "platform": "warehouse",
+   "name": "warehouse.web_events",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "int"
+   },
+   "usage": {
+    "queries_30d": 40
+   }
+  },
+  {
+   "id": "postgres.stage_0",
+   "platform": "postgres",
+   "name": "postgres.stage_0",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "postgres.stage_1",
+   "platform": "postgres",
+   "name": "postgres.stage_1",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "postgres.stage_2",
+   "platform": "postgres",
+   "name": "postgres.stage_2",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "postgres.stage_3",
+   "platform": "postgres",
+   "name": "postgres.stage_3",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "postgres.stage_4",
+   "platform": "postgres",
+   "name": "postgres.stage_4",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "postgres.stage_5",
+   "platform": "postgres",
+   "name": "postgres.stage_5",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": null
+   }
+  },
+  {
+   "id": "looker.revenue_board",
+   "platform": "looker",
+   "name": "looker.revenue_board",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 900
+   },
+   "tags": [
+    "executive"
+   ]
+  },
+  {
+   "id": "looker.address_map",
+   "platform": "looker",
+   "name": "looker.address_map",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 600
+   }
+  },
+  {
+   "id": "looker.churn",
+   "platform": "looker",
+   "name": "looker.churn",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 3000
+   },
+   "tags": [
+    "pii"
+   ]
+  },
+  {
+   "id": "warehouse.sessions",
+   "platform": "warehouse",
+   "name": "warehouse.sessions",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 20
+   },
+   "standing_issues": [
+    "nullable key"
+   ]
+  },
+  {
+   "id": "warehouse.promo_codes",
+   "platform": "warehouse",
+   "name": "warehouse.promo_codes",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 5
+   },
+   "standing_issues": [
+    "no description",
+    "mixed case names"
+   ]
+  },
+  {
+   "id": "warehouse.legacy_fx",
+   "platform": "warehouse",
+   "name": "warehouse.legacy_fx",
+   "schema": {
+    "c0": "string",
+    "c1": "string",
+    "c2": "string",
+    "c3": "string",
+    "c4": "string",
+    "c5": "string",
+    "c6": "string",
+    "c7": "string",
+    "c8": "string"
+   },
+   "usage": {
+    "queries_30d": 0
+   },
+   "standing_issues": [
+    "no owner"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "warehouse.addresses",
+   "to": "looker.address_map",
+   "columns": [
+    "c0",
+    "c1"
+   ]
+  },
+  {
+   "from": "warehouse.customers",
+   "to": "looker.churn",
+   "columns": [
+    "c0",
+    "c1"
+   ]
+  },
+  {
+   "from": "warehouse.orders",
+   "to": "looker.revenue_board",
+   "columns": [
+    "c0"
+   ]
+  },
+  {
+   "from": "warehouse.refunds",
+   "to": "looker.revenue_board"
+  },
+  {
+   "from": "warehouse.web_events",
+   "to": "looker.churn"
+  },
+  {
+   "from": "postgres.addresses",
+   "to": "postgres.stage_0"
+  },
+  {
+   "from": "postgres.stage_0",
+   "to": "postgres.stage_1"
+  },
+  {
+   "from": "postgres.stage_1",
+   "to": "postgres.stage_2"
+  },
+  {
+   "from": "postgres.stage_2",
+   "to": "postgres.stage_3"
+  },
+  {
+   "from": "postgres.stage_3",
+   "to": "postgres.stage_4"
+  },
+  {
+   "from": "postgres.stage_4",
+   "to": "postgres.stage_5"
+  }
+ ]
+}

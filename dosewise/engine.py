@@ -1,0 +1,159 @@
+"""The scoring engine. Plain arithmetic, no model, same input gives the same output.
+
+Risk = Hazard x Exposure x Receptor sensitivity x Uncertainty
+"""
+from __future__ import annotations
+
+import json
+import math
+from collections import deque
+from dataclasses import dataclass, field
+
+DEFAULT_CONFIG = {
+    "max_hops": 4,
+    "hop_decay": 0.5,
+    "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2},
+    "receptor_by_tag": {"pii": 2.0, "finance": 1.8, "executive": 1.5, "dashboard": 1.3},
+    "uncertainty_unknown_column_lineage": 0.5,
+    "uncertainty_unknown_usage": 0.5,
+    # The action line is pinned to a written reference case, not fitted to the data:
+    # one quarter of the columns removed, 1,000 queries a month one hop away,
+    # a PII consumer, and nothing missing from the evidence.
+    "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
+    "monitor_fraction": 0.25,
+    "exposure_floor": 0.3,
+}
+
+
+@dataclass
+class Finding:
+    asset: str
+    change: str
+    columns: list
+    hazard: float
+    dose: float
+    exposure: float
+    receptor: float
+    uncertainty: float
+    risk: float
+    band: str
+    naive_downstream: int
+    naive_rank: int = 0
+    rank: int = 0
+    reasons: list = field(default_factory=list)
+
+
+def load(path):
+    with open(path) as f:
+        return json.load(f)
+
+
+def diff_schemas(baseline: dict, assets: dict):
+    """Real changes only: what is different from the saved baseline."""
+    out = []
+    for aid, asset in assets.items():
+        old, new = baseline.get(aid), asset["schema"]
+        if old is None:
+            continue
+        removed = sorted(set(old) - set(new))
+        added = sorted(set(new) - set(old))
+        retyped = sorted(c for c in set(old) & set(new) if old[c] != new[c])
+        for kind, cols in (("column_removed", removed), ("type_changed", retyped), ("column_added", added)):
+            if cols:
+                out.append((aid, kind, cols, len(old)))
+    return out
+
+
+def downstream(edges, start, max_hops, touched):
+    """Breadth-first walk with the shortest hop count to each consumer."""
+    children = {}
+    for e in edges:
+        children.setdefault(e["from"], []).append(e)
+    seen, queue, unknown_edges = {}, deque([(start, 0)]), 0
+    while queue:
+        node, hop = queue.popleft()
+        if hop >= max_hops:
+            continue
+        for e in children.get(node, []):
+            cols = e.get("columns")
+            if hop == 0 and cols is not None and not set(cols) & set(touched):
+                continue  # column-level lineage says this consumer never reads the changed columns
+            if e["to"] in seen:
+                continue
+            seen[e["to"]] = hop + 1
+            if hop == 0 and cols is None:
+                unknown_edges += 1
+            queue.append((e["to"], hop + 1))
+    return seen, unknown_edges
+
+
+def band(risk, cfg):
+    ref = reference_score(cfg)
+    if risk >= ref:
+        return "Act"
+    if risk >= ref * cfg["monitor_fraction"]:
+        return "Monitor"
+    return "No Action"
+
+
+def reference_score(cfg):
+    r = cfg["reference_case"]
+    return r["hazard"] * r["dose"] * math.log10(1 + r["queries"] * cfg["hop_decay"] ** 0) * r["receptor"] * r["uncertainty"]
+
+
+def receptor_weight(asset, cfg):
+    w = 1.0
+    for t in asset.get("tags", []):
+        w = max(w, cfg["receptor_by_tag"].get(t, 1.0))
+    if asset.get("platform") in ("looker", "tableau", "powerbi"):
+        w = max(w, cfg["receptor_by_tag"].get("dashboard", 1.0))
+    return w
+
+
+def score(catalog, baseline, cfg=None):
+    cfg = {**DEFAULT_CONFIG, **(cfg or {})}
+    assets = {a["id"]: a for a in catalog["assets"]}
+    edges = catalog.get("edges", [])
+    findings = []
+    for aid, kind, cols, ncols in diff_schemas(baseline, assets):
+        seen, unknown_edges = downstream(edges, aid, cfg["max_hops"], cols)
+        dose = len(cols) / ncols
+        hazard = cfg["hazard_by_change"][kind]
+        reasons = [f"{kind.replace('_', ' ')} on {len(cols)} of {ncols} columns ({dose:.0%})"]
+        weighted, unmeasured, receptor = 0.0, 0, 1.0
+        for node, hop in seen.items():
+            q = assets.get(node, {}).get("usage", {}).get("queries_30d")
+            if q is None:
+                unmeasured += 1
+            else:
+                weighted += q * cfg["hop_decay"] ** (hop - 1)
+            if node in assets:
+                receptor = max(receptor, receptor_weight(assets[node], cfg))
+        # Unmeasured is not unused: if anything is downstream, exposure never drops to zero.
+        exposure = max(math.log10(1 + weighted), cfg["exposure_floor"]) if seen else 0.0
+        unc = 1.0
+        if seen:
+            unc += cfg["uncertainty_unknown_usage"] * unmeasured / len(seen)
+            unc += cfg["uncertainty_unknown_column_lineage"] * unknown_edges / max(1, sum(1 for e in edges if e["from"] == aid))
+        if not seen:
+            reasons.append("nothing downstream reads the changed columns")
+        else:
+            reasons.append(f"{len(seen)} downstream, {weighted:.0f} weighted queries a month after distance decay")
+        if unmeasured:
+            reasons.append(f"{unmeasured} consumer(s) have no usage data, which raises uncertainty rather than lowering risk")
+        if receptor > 1:
+            reasons.append(f"most sensitive consumer weighs {receptor}x")
+        risk = hazard * dose * exposure * receptor * unc
+        findings.append(Finding(aid, kind, cols, hazard, round(dose, 4), round(exposure, 3), receptor,
+                                round(unc, 3), round(risk, 2), band(risk, cfg), len(seen), reasons=reasons))
+    # Standing issues (problems that were already there and have not changed) score zero.
+    for a in catalog["assets"]:
+        for issue in a.get("standing_issues", []):
+            seen, _ = downstream(edges, a["id"], cfg["max_hops"], [])
+            findings.append(Finding(a["id"], "standing:" + issue, [], 0, 0, 0, 1.0, 1.0, 0.0, "No Action",
+                                    len(seen), reasons=["unchanged since the baseline, so nothing new has happened"]))
+    for i, f in enumerate(sorted(findings, key=lambda f: (-f.naive_downstream, f.asset, f.change)), 1):
+        f.naive_rank = i
+    for i, f in enumerate(sorted(findings, key=lambda f: (-f.risk, f.asset, f.change)), 1):
+        f.rank = i
+    return sorted(findings, key=lambda f: f.rank), reference_score(cfg)

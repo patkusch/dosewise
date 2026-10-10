@@ -1,0 +1,200 @@
+{
+ "warehouse.addresses": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.addresses": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.customers": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.orders": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.refunds": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.web_events": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_0": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_1": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_2": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_3": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_4": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "postgres.stage_5": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "looker.revenue_board": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "looker.address_map": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "looker.churn": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.sessions": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.promo_codes": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ },
+ "warehouse.legacy_fx": {
+  "c0": "string",
+  "c1": "string",
+  "c2": "string",
+  "c3": "string",
+  "c4": "string",
+  "c5": "string",
+  "c6": "string",
+  "c7": "string",
+  "c8": "string"
+ }
+}
