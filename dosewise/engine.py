@@ -172,3 +172,28 @@ def score(catalog, baseline, cfg=None):
     for i, f in enumerate(sorted(findings, key=lambda f: (-f.risk, f.asset, f.change)), 1):
         f.rank = i
     return sorted(findings, key=lambda f: f.rank), reference_score(cfg)
+
+
+def stability(catalog, baseline, cfg=None, factor=1.5):
+    """How often does each finding keep its band when one weight at a time is made 1.5x bigger or smaller?
+
+    The weights are starting guesses, so a verdict that flips when one is nudged is a verdict to trust less.
+    """
+    import copy
+    cfg = {**DEFAULT_CONFIG, **(cfg or {})}
+    base_f, _ = score(catalog, baseline, cfg)
+    keys = [(g, k) for g in ("hazard_by_change", "receptor_by_tag") for k in cfg[g]] + [("hop_decay", None)]
+    runs = 0
+    same = {(f.asset, f.change): 0 for f in base_f}
+    for g, k in keys:
+        for m in (factor, 1 / factor):
+            c = copy.deepcopy(cfg)
+            if k is None:
+                c[g] = min(0.99, c[g] * m)
+            else:
+                c[g][k] *= m
+            runs += 1
+            for f in score(catalog, baseline, c)[0]:
+                if f.band == next(b.band for b in base_f if (b.asset, b.change) == (f.asset, f.change)):
+                    same[(f.asset, f.change)] += 1
+    return {k: v / runs for k, v in same.items()}

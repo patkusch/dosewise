@@ -104,3 +104,10 @@ def test_only_filters_the_report_but_not_the_exit_code():
     r = _cli("--only", "Act", "--fail-on", "Act")
     assert "postgres.addresses" not in r.stdout and "warehouse.customers" in r.stdout
     assert r.returncode == 1
+
+
+def test_stability_is_a_share_between_zero_and_one_and_zero_findings_never_flip():
+    st = engine.stability(cat, base)
+    assert all(0 <= v <= 1 for v in st.values())
+    assert all(st[(f.asset, f.change)] == 1.0 for f in F if f.change.startswith("standing:"))
+    assert "Do the verdicts hold up?" in _cli("--stability").stdout
