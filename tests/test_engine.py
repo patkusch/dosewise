@@ -153,3 +153,10 @@ def test_a_fresh_baseline_makes_the_catalog_look_healthy(tmp_path):
     r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--baseline", str(out), "--only", "Act,Monitor"],
                        capture_output=True, text=True)
     assert r.returncode == 0 and "0 need action" in r.stdout
+
+
+def test_html_report_escapes_and_lists_every_finding(tmp_path):
+    out = tmp_path / "r.html"
+    assert _cli("--html", str(out)).returncode == 0
+    text = out.read_text()
+    assert text.count("<tr class=") == len(F) and "<script" not in text

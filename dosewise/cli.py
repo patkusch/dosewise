@@ -16,6 +16,7 @@ def main(argv=None):
     p.add_argument("--explain", metavar="ASSET", help="print the full breakdown for one asset and stop")
     p.add_argument("--max-hops", type=int, help="how many steps of lineage to follow (default 4)")
     p.add_argument("--write-baseline", metavar="FILE", help="save the catalog's current schemas as a new baseline and stop")
+    p.add_argument("--html", help="also write a single-page HTML report here")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
@@ -66,6 +67,9 @@ def main(argv=None):
         for f in shown:
             if f.risk > 0:
                 sys.stdout.write(f"- {f.asset} ({f.change}): {st[(f.asset, f.change)]:.0%}\n")
+    if a.html:
+        with open(a.html, "w") as f:
+            f.write(report.html(findings, ref))
     if a.csv:
         report.write_csv(findings, a.csv)
     if a.fail_on:

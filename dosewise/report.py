@@ -30,3 +30,21 @@ def write_csv(findings, path):
         w.writerow(["rank", "naive_rank", "asset", "change", "risk", "band", "why"])
         for x in findings:
             w.writerow([x.rank, x.naive_rank, x.asset, x.change, x.risk, x.band, "; ".join(x.reasons)])
+
+
+def html(findings, ref):
+    import html as h
+    rows = "".join(
+        f"<tr class='{f.band.replace(' ', '').lower()}'><td>{f.rank}</td><td>{f.naive_rank}</td><td>{h.escape(f.asset)}</td>"
+        f"<td>{h.escape(f.change)}</td><td>{f.risk}</td><td>{f.band}</td><td>{h.escape('; '.join(f.reasons))}</td></tr>"
+        for f in findings)
+    acts = sum(f.band == "Act" for f in findings)
+    return f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Dosewise report</title>
+<style>body{{font:15px system-ui;margin:2rem auto;max-width:70rem;padding:0 1rem}}table{{border-collapse:collapse;width:100%}}
+td,th{{padding:.4rem .6rem;border-bottom:1px solid #8884;text-align:left;vertical-align:top}}
+.act td:nth-child(6){{color:#b00020;font-weight:700}}.monitor td:nth-child(6){{color:#9a6700;font-weight:700}}.noaction{{opacity:.6}}</style>
+<h1>Dosewise report</h1><p>{len(findings)} findings, {acts} need action. Action line {ref:.2f}.
+"Was" is the rank by downstream count alone.</p>
+<table><tr><th>Rank<th>Was<th>Asset<th>Change<th>Risk<th>Band<th>Why</tr>{rows}</table>
+"""
