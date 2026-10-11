@@ -14,12 +14,15 @@ def main(argv=None):
     p.add_argument("--only", help="show only these bands, e.g. Act,Monitor (the exit code still looks at everything)")
     p.add_argument("--stability", action="store_true", help="also check how often each verdict survives nudging the weights")
     p.add_argument("--explain", metavar="ASSET", help="print the full breakdown for one asset and stop")
+    p.add_argument("--max-hops", type=int, help="how many steps of lineage to follow (default 4)")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
     a = p.parse_args(argv)
     try:
         cfg = engine.load(a.config) if a.config else None
+        if a.max_hops is not None:
+            cfg = {**(cfg or {}), "max_hops": a.max_hops}
         findings, ref = engine.score(engine.load(a.catalog), engine.load(a.baseline), cfg)
     except FileNotFoundError as e:
         p.exit(2, f"dosewise: can't find {e.filename}\n")

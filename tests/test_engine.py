@@ -124,3 +124,10 @@ def test_explain_prints_one_assets_breakdown():
     r = _cli("--explain", "postgres.addresses")
     assert r.returncode == 0 and "no usage data" in r.stdout and "warehouse" not in r.stdout
     assert _cli("--explain", "nope").returncode == 2
+
+
+def test_max_hops_limits_how_far_lineage_is_followed():
+    near = {(f.asset, f.change): f for f in engine.score(cat, base, {"max_hops": 1})[0]}
+    assert near[("postgres.addresses", "column_removed")].naive_downstream == 1
+    assert by[("postgres.addresses", "column_removed")].naive_downstream == 4
+    assert "--max-hops" in _cli("--help").stdout
