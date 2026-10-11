@@ -160,3 +160,9 @@ def test_html_report_escapes_and_lists_every_finding(tmp_path):
     assert _cli("--html", str(out)).returncode == 0
     text = out.read_text()
     assert text.count("<tr class=") == len(F) and "<script" not in text
+
+
+def test_package_version_matches_pyproject():
+    import dosewise, re
+    text = open(os.path.join(D, "..", "pyproject.toml")).read()
+    assert re.search(rf'version = "{re.escape(dosewise.__version__)}"', text)
