@@ -152,8 +152,15 @@ def score(catalog, baseline, cfg=None):
         if receptor > 1:
             reasons.append(f"most sensitive consumer weighs {receptor}x")
         risk = hazard * dose * exposure * receptor * unc
+        b = band(risk, cfg)
+        ref = reference_score(cfg)
+        if b != "Act" and risk > 0:
+            target, name = (ref, "Act") if b == "Monitor" else (ref * cfg["monitor_fraction"], "Monitor")
+            reasons.append(f"would move to {name} if the risk were {target / risk:.1f}x higher")
+        if unc > 1:
+            reasons.append("filling in the missing evidence could move this up or down")
         findings.append(Finding(aid, kind, cols, hazard, round(dose, 4), round(exposure, 3), receptor,
-                                round(unc, 3), round(risk, 2), band(risk, cfg), len(seen), reasons=reasons))
+                                round(unc, 3), round(risk, 2), b, len(seen), reasons=reasons))
     # Standing issues (problems that were already there and have not changed) score zero.
     for a in catalog["assets"]:
         for issue in a.get("standing_issues", []):

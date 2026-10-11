@@ -92,3 +92,9 @@ def test_csv_has_one_row_per_finding(tmp_path):
     assert _cli("--csv", str(out)).returncode == 0
     lines = out.read_text().strip().splitlines()
     assert lines[0].startswith("rank,") and len(lines) == len(F) + 1
+
+
+def test_each_scored_finding_says_what_would_change_its_verdict():
+    for f in F:
+        if f.risk > 0 and f.band != "Act":
+            assert any("would move to" in r for r in f.reasons)
