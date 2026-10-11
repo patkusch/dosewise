@@ -111,3 +111,10 @@ def test_stability_is_a_share_between_zero_and_one_and_zero_findings_never_flip(
     assert all(0 <= v <= 1 for v in st.values())
     assert all(st[(f.asset, f.change)] == 1.0 for f in F if f.change.startswith("standing:"))
     assert "Do the verdicts hold up?" in _cli("--stability").stdout
+
+
+def test_a_cycle_in_the_lineage_does_not_hang_or_count_the_table_as_its_own_consumer():
+    loop = {**cat, "edges": cat["edges"] + [{"from": "looker.address_map", "to": "warehouse.addresses"}]}
+    f, _ = engine.score(loop, base)
+    d = {(x.asset, x.change): x for x in f}[("warehouse.addresses", "column_removed")]
+    assert d.naive_downstream == 1

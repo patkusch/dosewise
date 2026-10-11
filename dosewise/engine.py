@@ -73,7 +73,7 @@ def downstream(edges, start, max_hops, touched):
     children = {}
     for e in edges:
         children.setdefault(e["from"], []).append(e)
-    seen, queue, unknown_edges = {}, deque([(start, 0)]), 0
+    seen, queue, unknown_edges = {start: 0}, deque([(start, 0)]), 0
     while queue:
         node, hop = queue.popleft()
         if hop >= max_hops:
@@ -88,6 +88,7 @@ def downstream(edges, start, max_hops, touched):
             if hop == 0 and cols is None:
                 unknown_edges += 1
             queue.append((e["to"], hop + 1))
+    seen.pop(start)
     return seen, unknown_edges
 
 
