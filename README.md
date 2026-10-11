@@ -22,6 +22,8 @@ Problems that were already there and have not changed score exactly zero. A heal
 
 ## Try it
 
+Install with `pip install .` to get a `dosewise` command, or run it in place:
+
 ```bash
 python3 -m dosewise --catalog data/catalog.json --baseline data/baseline.json
 ```
@@ -35,7 +37,10 @@ No installs needed (standard library only). The sample catalog is invented. In i
 | `--fail-on Act` | exit 1 if anything needs action, so a pipeline can stop |
 | `--only Act,Monitor` | show only those bands |
 | `--stability` | check how many weight changes would flip each verdict |
-| `--csv FILE`, `--json FILE` | also write the results to a file |
+| `--explain ASSET` | full breakdown for one asset |
+| `--max-hops N` | how far to follow lineage (default 4) |
+| `--write-baseline FILE` | save the current schemas as your first baseline |
+| `--html FILE`, `--csv FILE`, `--json FILE` | also write the results to a file |
 | `--config FILE` | override the scoring settings |
 
 ## Using your own catalog
