@@ -1,0 +1,6 @@
+{
+  "max_hops": 4,
+  "hop_decay": 0.5,
+  "receptor_by_tag": {"pii": 2.5, "finance": 1.8, "executive": 1.5, "dashboard": 1.3, "regulatory": 2.0},
+  "uncertainty_no_owner": 0.5
+}

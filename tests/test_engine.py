@@ -141,3 +141,7 @@ def test_a_typo_in_the_config_is_an_error_not_silently_ignored(tmp_path):
     bad.write_text('{"hop_decay": 5}')
     r = _cli("--config", str(bad))
     assert r.returncode == 2 and "hop_decay" in r.stderr
+
+
+def test_the_example_config_is_valid_and_runs():
+    assert _cli("--config", f"{D}/config.example.json").returncode == 0
