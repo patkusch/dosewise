@@ -115,7 +115,19 @@ def receptor_weight(asset, cfg):
     return w
 
 
+def check_config(cfg):
+    """Fail early and plainly on a typo, instead of silently ignoring it."""
+    unknown = set(cfg) - set(DEFAULT_CONFIG)
+    if unknown:
+        raise ValueError(f"unknown setting(s): {', '.join(sorted(unknown))}")
+    if not 0 < cfg.get("hop_decay", 0.5) <= 1:
+        raise ValueError("hop_decay must be above 0 and at most 1")
+    if cfg.get("max_hops", 1) < 1:
+        raise ValueError("max_hops must be at least 1")
+
+
 def score(catalog, baseline, cfg=None):
+    check_config(cfg or {})
     cfg = {**DEFAULT_CONFIG, **(cfg or {})}
     assets = {a["id"]: a for a in catalog["assets"]}
     edges = catalog.get("edges", [])

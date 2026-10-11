@@ -26,6 +26,10 @@ def main(argv=None):
         findings, ref = engine.score(engine.load(a.catalog), engine.load(a.baseline), cfg)
     except FileNotFoundError as e:
         p.exit(2, f"dosewise: can't find {e.filename}\n")
+    except ValueError as e:
+        if isinstance(e, json.JSONDecodeError):
+            p.exit(2, f"dosewise: that file is not valid JSON ({e})\n")
+        p.exit(2, f"dosewise: {e}\n")
     except json.JSONDecodeError as e:
         p.exit(2, f"dosewise: that file is not valid JSON ({e})\n")
     except KeyError as e:

@@ -131,3 +131,13 @@ def test_max_hops_limits_how_far_lineage_is_followed():
     assert near[("postgres.addresses", "column_removed")].naive_downstream == 1
     assert by[("postgres.addresses", "column_removed")].naive_downstream == 4
     assert "--max-hops" in _cli("--help").stdout
+
+
+def test_a_typo_in_the_config_is_an_error_not_silently_ignored(tmp_path):
+    import pytest
+    with pytest.raises(ValueError, match="unknown setting"):
+        engine.score(cat, base, {"hop_decays": 0.5})
+    bad = tmp_path / "c.json"
+    bad.write_text('{"hop_decay": 5}')
+    r = _cli("--config", str(bad))
+    assert r.returncode == 2 and "hop_decay" in r.stderr
