@@ -118,3 +118,9 @@ def test_a_cycle_in_the_lineage_does_not_hang_or_count_the_table_as_its_own_cons
     f, _ = engine.score(loop, base)
     d = {(x.asset, x.change): x for x in f}[("warehouse.addresses", "column_removed")]
     assert d.naive_downstream == 1
+
+
+def test_explain_prints_one_assets_breakdown():
+    r = _cli("--explain", "postgres.addresses")
+    assert r.returncode == 0 and "no usage data" in r.stdout and "warehouse" not in r.stdout
+    assert _cli("--explain", "nope").returncode == 2
