@@ -11,6 +11,7 @@ def main(argv=None):
     p.add_argument("--catalog", required=True, help="catalog JSON: assets and lineage edges")
     p.add_argument("--baseline", required=True, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")
+    p.add_argument("--only", help="show only these bands, e.g. Act,Monitor (the exit code still looks at everything)")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
@@ -24,7 +25,8 @@ def main(argv=None):
         p.exit(2, f"dosewise: that file is not valid JSON ({e})\n")
     except KeyError as e:
         p.exit(2, f"dosewise: the catalog is missing the field {e}\n")
-    sys.stdout.write(report.markdown(findings, ref))
+    shown = [f for f in findings if f.band in a.only.split(",")] if a.only else findings
+    sys.stdout.write(report.markdown(shown, ref))
     if a.json:
         with open(a.json, "w") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)

@@ -98,3 +98,9 @@ def test_each_scored_finding_says_what_would_change_its_verdict():
     for f in F:
         if f.risk > 0 and f.band != "Act":
             assert any("would move to" in r for r in f.reasons)
+
+
+def test_only_filters_the_report_but_not_the_exit_code():
+    r = _cli("--only", "Act", "--fail-on", "Act")
+    assert "postgres.addresses" not in r.stdout and "warehouse.customers" in r.stdout
+    assert r.returncode == 1
