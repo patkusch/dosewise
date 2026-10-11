@@ -9,16 +9,27 @@ from . import engine, report
 def main(argv=None):
     p = argparse.ArgumentParser(prog="dosewise", description=__doc__)
     p.add_argument("--catalog", required=True, help="catalog JSON: assets and lineage edges")
-    p.add_argument("--baseline", required=True, help="saved schema baseline JSON")
+    p.add_argument("--baseline", required=False, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")
     p.add_argument("--only", help="show only these bands, e.g. Act,Monitor (the exit code still looks at everything)")
     p.add_argument("--stability", action="store_true", help="also check how often each verdict survives nudging the weights")
     p.add_argument("--explain", metavar="ASSET", help="print the full breakdown for one asset and stop")
     p.add_argument("--max-hops", type=int, help="how many steps of lineage to follow (default 4)")
+    p.add_argument("--write-baseline", metavar="FILE", help="save the catalog's current schemas as a new baseline and stop")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
     a = p.parse_args(argv)
+    if a.write_baseline:
+        try:
+            cat = engine.load(a.catalog)
+        except FileNotFoundError as e:
+            p.exit(2, f"dosewise: can't find {e.filename}\n")
+        with open(a.write_baseline, "w") as f:
+            json.dump({x["id"]: x["schema"] for x in cat["assets"]}, f, indent=1, sort_keys=True)
+        return 0
+    if not a.baseline:
+        p.exit(2, "dosewise: --baseline is required unless you pass --write-baseline\n")
     try:
         cfg = engine.load(a.config) if a.config else None
         if a.max_hops is not None:

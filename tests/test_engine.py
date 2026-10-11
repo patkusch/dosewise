@@ -145,3 +145,11 @@ def test_a_typo_in_the_config_is_an_error_not_silently_ignored(tmp_path):
 
 def test_the_example_config_is_valid_and_runs():
     assert _cli("--config", f"{D}/config.example.json").returncode == 0
+
+
+def test_a_fresh_baseline_makes_the_catalog_look_healthy(tmp_path):
+    out = tmp_path / "b.json"
+    assert subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--write-baseline", str(out)]).returncode == 0
+    r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--baseline", str(out), "--only", "Act,Monitor"],
+                       capture_output=True, text=True)
+    assert r.returncode == 0 and "0 need action" in r.stdout
