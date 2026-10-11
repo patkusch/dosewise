@@ -28,6 +28,16 @@ python3 -m dosewise --catalog data/catalog.json --baseline data/baseline.json
 
 No installs needed (standard library only). The sample catalog is invented. In it, two tables named `addresses` lose the same two columns. The one with six tables downstream that nobody queries ranks first by downstream count and fifth by real risk. A table people actually query, with personal data behind it, is the one that needs action.
 
+## Options
+
+| flag | what it does |
+|---|---|
+| `--fail-on Act` | exit 1 if anything needs action, so a pipeline can stop |
+| `--only Act,Monitor` | show only those bands |
+| `--stability` | check how many weight changes would flip each verdict |
+| `--csv FILE`, `--json FILE` | also write the results to a file |
+| `--config FILE` | override the scoring settings |
+
 ## Using your own catalog
 
 `catalog.json` holds `assets` (id, platform, `schema` of column name to type, `tags`, `usage.queries_30d` or null if unmeasured) and `edges` (`from` feeds `to`, with optional `columns` if you know which columns flow). `baseline.json` is the saved schema from the last good run. Keep it under version control so the result is the same every run.
