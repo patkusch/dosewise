@@ -14,6 +14,7 @@ DEFAULT_CONFIG = {
     "hop_decay": 0.5,
     "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2, "table_removed": 1.0},
     "receptor_by_tag": {"pii": 2.0, "finance": 1.8, "executive": 1.5, "dashboard": 1.3},
+    "receptor_by_domain": {"finance": 1.8, "customer": 1.5},
     "uncertainty_unknown_column_lineage": 0.5,
     "uncertainty_unknown_usage": 0.5,
     # The action line is pinned to a written reference case, not fitted to the data:
@@ -110,6 +111,7 @@ def receptor_weight(asset, cfg):
     w = 1.0
     for t in asset.get("tags", []):
         w = max(w, cfg["receptor_by_tag"].get(t, 1.0))
+    w = max(w, cfg["receptor_by_domain"].get(asset.get("domain"), 1.0))
     if asset.get("platform") in ("looker", "tableau", "powerbi"):
         w = max(w, cfg["receptor_by_tag"].get("dashboard", 1.0))
     return w

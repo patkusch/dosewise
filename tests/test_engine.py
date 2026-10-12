@@ -166,3 +166,9 @@ def test_package_version_matches_pyproject():
     import dosewise, re
     text = open(os.path.join(D, "..", "pyproject.toml")).read()
     assert re.search(rf'version = "{re.escape(dosewise.__version__)}"', text)
+
+
+def test_a_sensitive_domain_raises_receptor_weight():
+    plain = engine.receptor_weight({"id": "x"}, engine.DEFAULT_CONFIG)
+    fin = engine.receptor_weight({"id": "x", "domain": "finance"}, engine.DEFAULT_CONFIG)
+    assert plain == 1.0 and fin == 1.8
