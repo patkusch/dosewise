@@ -13,6 +13,8 @@ def markdown(findings, ref):
              "| rank | was (by downstream count) | asset | change | risk | band |", "|---|---|---|---|---|---|"]
     for f in findings:
         lines.append(f"| {f.rank} | {f.naive_rank} | {f.asset} | {f.change} | {f.risk} | {f.band} |")
+    if not findings:
+        lines += ["", "Nothing to show."]
     lines += ["", "## Why", ""]
     for f in findings:
         if f.risk > 0:

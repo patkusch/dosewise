@@ -230,3 +230,7 @@ def test_lineage_pointing_at_an_unknown_table_warns_but_still_runs(tmp_path):
 def test_top_limits_the_table_to_the_highest_risk_rows():
     out = _cli("--top", "2").stdout
     assert out.count("| warehouse.") + out.count("| postgres.") == 2 and "warehouse.customers" in out
+
+
+def test_a_report_with_nothing_in_it_says_so():
+    assert "Nothing to show." in _cli("--only", "Nope").stdout

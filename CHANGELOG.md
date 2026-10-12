@@ -1,5 +1,10 @@
 # Changes
 
+## 0.3.1
+- `--version` and `--top N`.
+- Duplicate asset ids are rejected; lineage that mentions an unknown table warns.
+- A filtered-out report says "Nothing to show."
+
 ## 0.3.0
 - Consumers are weighed by business domain as well as tags.
 - A change to a key column is worse than to an ordinary one.
