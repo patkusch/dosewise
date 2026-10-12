@@ -172,3 +172,10 @@ def test_a_sensitive_domain_raises_receptor_weight():
     plain = engine.receptor_weight({"id": "x"}, engine.DEFAULT_CONFIG)
     fin = engine.receptor_weight({"id": "x", "domain": "finance"}, engine.DEFAULT_CONFIG)
     assert plain == 1.0 and fin == 1.8
+
+
+def test_changing_a_key_column_is_worse_than_changing_an_ordinary_one():
+    keyed = {**cat, "assets": [dict(a, key_columns=["c0"]) if a["id"] == "warehouse.customers" else a for a in cat["assets"]]}
+    k = {(f.asset, f.change): f for f in engine.score(keyed, base)[0]}[("warehouse.customers", "column_removed")]
+    assert k.risk > by[("warehouse.customers", "column_removed")].risk
+    assert any("key column" in r for r in k.reasons)

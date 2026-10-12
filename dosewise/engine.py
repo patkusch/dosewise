@@ -23,6 +23,7 @@ DEFAULT_CONFIG = {
     "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
     "monitor_fraction": 0.25,
     "exposure_floor": 0.3,
+    "key_column_multiplier": 1.5,
     "uncertainty_no_owner": 0.5,
 }
 
@@ -138,7 +139,12 @@ def score(catalog, baseline, cfg=None):
         seen, unknown_edges = downstream(edges, aid, cfg["max_hops"], cols)
         dose = len(cols) / ncols
         hazard = cfg["hazard_by_change"][kind]
+        keys = set(assets.get(aid, {}).get("key_columns", [])) & set(cols)
+        if keys:
+            hazard *= cfg["key_column_multiplier"]
         reasons = [f"{kind.replace('_', ' ')} on {len(cols)} of {ncols} columns ({dose:.0%})"]
+        if keys:
+            reasons.append(f"touches key column(s) {sorted(keys)}, which makes it worse")
         weighted, unmeasured, receptor = 0.0, 0, 1.0
         for node, hop in seen.items():
             q = assets.get(node, {}).get("usage", {}).get("queries_30d")
