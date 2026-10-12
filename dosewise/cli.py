@@ -59,6 +59,11 @@ def main(argv=None):
             sys.stdout.write(f"  hazard {f.hazard} x dose {f.dose} x exposure {f.exposure} x receptor {f.receptor} x uncertainty {f.uncertainty}\n")
         return 0
     shown = [f for f in findings if f.band in a.only.split(",")] if a.only else findings
+    cat_ids = {x["id"] for x in engine.load(a.catalog)["assets"]}
+    for e in engine.load(a.catalog).get("edges", []):
+        for end in (e["from"], e["to"]):
+            if end not in cat_ids:
+                sys.stderr.write(f"dosewise: warning: lineage mentions {end}, which is not in the catalog\n")
     sys.stdout.write((report.github if a.format == "github" else report.markdown)(shown, ref))
     if a.json:
         with open(a.json, "w") as f:

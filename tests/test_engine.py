@@ -216,3 +216,12 @@ def test_duplicate_asset_ids_are_rejected_plainly(tmp_path):
     r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", str(p), "--baseline", f"{D}/baseline.json"],
                        capture_output=True, text=True, cwd=os.path.join(D, ".."))
     assert r.returncode == 2 and "more than once" in r.stderr
+
+
+def test_lineage_pointing_at_an_unknown_table_warns_but_still_runs(tmp_path):
+    bad = {**cat, "edges": cat["edges"] + [{"from": "warehouse.customers", "to": "ghost.table"}]}
+    p = tmp_path / "ghost.json"
+    p.write_text(__import__("json").dumps(bad))
+    r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", str(p), "--baseline", f"{D}/baseline.json"],
+                       capture_output=True, text=True, cwd=os.path.join(D, ".."))
+    assert r.returncode == 0 and "ghost.table" in r.stderr
