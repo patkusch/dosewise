@@ -179,3 +179,7 @@ def test_changing_a_key_column_is_worse_than_changing_an_ordinary_one():
     k = {(f.asset, f.change): f for f in engine.score(keyed, base)[0]}[("warehouse.customers", "column_removed")]
     assert k.risk > by[("warehouse.customers", "column_removed")].risk
     assert any("key column" in r for r in k.reasons)
+
+
+def test_report_summarises_counts_by_band():
+    assert "By band: Act 1, Monitor 3, No Action 5." in _cli().stdout

@@ -8,6 +8,7 @@ def markdown(findings, ref):
     zero = [f for f in findings if f.risk == 0]
     lines = ["# Dosewise report", "",
              f"{len(findings)} findings. {len(acts)} need action. {len(zero)} score exactly zero.",
+             "By band: " + ", ".join(f"{b} {sum(f.band == b for f in findings)}" for b in ("Act", "Monitor", "No Action")) + ".",
              f"Action line (from the written reference case): {ref:.2f}", "",
              "| rank | was (by downstream count) | asset | change | risk | band |", "|---|---|---|---|---|---|"]
     for f in findings:
