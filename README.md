@@ -45,6 +45,8 @@ No installs needed (standard library only). The sample catalog is invented. In i
 
 ## Using your own catalog
 
+The full input format and exit codes are in [docs/format.md](docs/format.md).
+
 `catalog.json` holds `assets` (id, platform, `schema` of column name to type, `tags`, `usage.queries_30d` or null if unmeasured) and `edges` (`from` feeds `to`, with optional `columns` if you know which columns flow). `baseline.json` is the saved schema from the last good run. Keep it under version control so the result is the same every run.
 
 The action line is not fitted to the data. It comes from a written reference case in `dosewise/engine.py` (a quarter of columns removed, 1,000 queries a month one step away, personal data, nothing missing). Change that case to match your own idea of "worth waking someone for".

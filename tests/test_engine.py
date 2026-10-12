@@ -197,3 +197,8 @@ def test_results_do_not_depend_on_the_order_of_assets_or_edges():
         shuffled = {"assets": r.sample(cat["assets"], len(cat["assets"])), "edges": r.sample(cat["edges"], len(cat["edges"]))}
         f, _ = engine.score(shuffled, base)
         assert [(x.asset, x.change, x.risk, x.rank) for x in f] == [(x.asset, x.change, x.risk, x.rank) for x in F]
+
+
+def test_format_doc_lists_every_exit_code_the_cli_uses():
+    text = open(os.path.join(D, "..", "docs", "format.md")).read()
+    assert all(f"| {c} |" in text for c in (0, 1, 2))
