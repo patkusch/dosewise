@@ -188,3 +188,12 @@ def test_report_summarises_counts_by_band():
 def test_github_format_marks_act_as_error_and_monitor_as_warning():
     out = _cli("--format", "github").stdout
     assert out.count("::error") == 1 and out.count("::warning") == 3
+
+
+def test_results_do_not_depend_on_the_order_of_assets_or_edges():
+    import random
+    for seed in range(5):
+        r = random.Random(seed)
+        shuffled = {"assets": r.sample(cat["assets"], len(cat["assets"])), "edges": r.sample(cat["edges"], len(cat["edges"]))}
+        f, _ = engine.score(shuffled, base)
+        assert [(x.asset, x.change, x.risk, x.rank) for x in f] == [(x.asset, x.change, x.risk, x.rank) for x in F]
