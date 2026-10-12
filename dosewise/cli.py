@@ -19,6 +19,7 @@ def main(argv=None):
     p.add_argument("--write-baseline", metavar="FILE", help="save the catalog's current schemas as a new baseline and stop")
     p.add_argument("--html", help="also write a single-page HTML report here")
     p.add_argument("--format", choices=["markdown", "github"], default="markdown", help="github prints Actions annotations")
+    p.add_argument("--top", type=int, help="show only the N highest-risk findings")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
@@ -59,6 +60,8 @@ def main(argv=None):
             sys.stdout.write(f"  hazard {f.hazard} x dose {f.dose} x exposure {f.exposure} x receptor {f.receptor} x uncertainty {f.uncertainty}\n")
         return 0
     shown = [f for f in findings if f.band in a.only.split(",")] if a.only else findings
+    if a.top:
+        shown = shown[: a.top]
     cat_ids = {x["id"] for x in engine.load(a.catalog)["assets"]}
     for e in engine.load(a.catalog).get("edges", []):
         for end in (e["from"], e["to"]):

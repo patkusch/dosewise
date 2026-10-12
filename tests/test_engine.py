@@ -225,3 +225,8 @@ def test_lineage_pointing_at_an_unknown_table_warns_but_still_runs(tmp_path):
     r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", str(p), "--baseline", f"{D}/baseline.json"],
                        capture_output=True, text=True, cwd=os.path.join(D, ".."))
     assert r.returncode == 0 and "ghost.table" in r.stderr
+
+
+def test_top_limits_the_table_to_the_highest_risk_rows():
+    out = _cli("--top", "2").stdout
+    assert out.count("| warehouse.") + out.count("| postgres.") == 2 and "warehouse.customers" in out
