@@ -132,6 +132,10 @@ def check_config(cfg):
 def score(catalog, baseline, cfg=None):
     check_config(cfg or {})
     cfg = {**DEFAULT_CONFIG, **(cfg or {})}
+    ids = [a["id"] for a in catalog["assets"]]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValueError(f"the same asset id appears more than once: {', '.join(dupes)}")
     assets = {a["id"]: a for a in catalog["assets"]}
     edges = catalog.get("edges", [])
     findings = []

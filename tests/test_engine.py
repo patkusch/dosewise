@@ -207,3 +207,12 @@ def test_format_doc_lists_every_exit_code_the_cli_uses():
 def test_version_flag():
     import dosewise
     assert _cli("--version").stdout.strip() == f"dosewise {dosewise.__version__}"
+
+
+def test_duplicate_asset_ids_are_rejected_plainly(tmp_path):
+    bad = {**cat, "assets": cat["assets"] + [cat["assets"][0]]}
+    p = tmp_path / "dup.json"
+    p.write_text(__import__("json").dumps(bad))
+    r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", str(p), "--baseline", f"{D}/baseline.json"],
+                       capture_output=True, text=True, cwd=os.path.join(D, ".."))
+    assert r.returncode == 2 and "more than once" in r.stderr
