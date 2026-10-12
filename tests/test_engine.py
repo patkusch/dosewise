@@ -183,3 +183,8 @@ def test_changing_a_key_column_is_worse_than_changing_an_ordinary_one():
 
 def test_report_summarises_counts_by_band():
     assert "By band: Act 1, Monitor 3, No Action 5." in _cli().stdout
+
+
+def test_github_format_marks_act_as_error_and_monitor_as_warning():
+    out = _cli("--format", "github").stdout
+    assert out.count("::error") == 1 and out.count("::warning") == 3

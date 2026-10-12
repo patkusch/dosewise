@@ -49,3 +49,13 @@ td,th{{padding:.4rem .6rem;border-bottom:1px solid #8884;text-align:left;vertica
 "Was" is the rank by downstream count alone.</p>
 <table><tr><th>Rank<th>Was<th>Asset<th>Change<th>Risk<th>Band<th>Why</tr>{rows}</table>
 """
+
+
+def github(findings, ref):
+    """GitHub Actions annotations: Act shows as an error, Monitor as a warning."""
+    out = []
+    for f in findings:
+        if f.band in ("Act", "Monitor"):
+            level = "error" if f.band == "Act" else "warning"
+            out.append(f"::{level} title=Dosewise {f.band}::{f.asset} {f.change} risk {f.risk}. " + "; ".join(f.reasons))
+    return "\n".join(out) + ("\n" if out else "")
