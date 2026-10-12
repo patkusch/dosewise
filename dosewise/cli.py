@@ -3,11 +3,12 @@ import dataclasses
 import json
 import sys
 
-from . import engine, report
+from . import __version__, engine, report
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="dosewise", description=__doc__)
+    p.add_argument("--version", action="version", version=f"dosewise {__version__}")
     p.add_argument("--catalog", required=True, help="catalog JSON: assets and lineage edges")
     p.add_argument("--baseline", required=False, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")

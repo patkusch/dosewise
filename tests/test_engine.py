@@ -202,3 +202,8 @@ def test_results_do_not_depend_on_the_order_of_assets_or_edges():
 def test_format_doc_lists_every_exit_code_the_cli_uses():
     text = open(os.path.join(D, "..", "docs", "format.md")).read()
     assert all(f"| {c} |" in text for c in (0, 1, 2))
+
+
+def test_version_flag():
+    import dosewise
+    assert _cli("--version").stdout.strip() == f"dosewise {dosewise.__version__}"
