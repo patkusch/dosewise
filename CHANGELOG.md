@@ -1,5 +1,11 @@
 # Changes
 
+## 0.5.0
+- All files are read and written as UTF-8.
+- Lineage is looked up once, not once per finding (3,000 tables in well under a second).
+- `--explain` lists each downstream consumer; the JSON gains a `consumers` key (see `docs/json-output.md`).
+- Ruff in CI; contributing notes.
+
 ## 0.4.0
 - A widening type change (int to bigint) is scored as mild.
 - A removal next to an addition is flagged as a possible rename.
