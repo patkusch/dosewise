@@ -234,3 +234,12 @@ def test_top_limits_the_table_to_the_highest_risk_rows():
 
 def test_a_report_with_nothing_in_it_says_so():
     assert "Nothing to show." in _cli("--only", "Nope").stdout
+
+
+def test_a_widening_type_change_is_much_milder_than_a_breaking_one():
+    b2 = {k: dict(v) for k, v in base.items()}
+    b2["warehouse.orders"]["c0"] = "int"
+    cat2 = {**cat, "assets": [dict(a, schema=dict(a["schema"], c0="bigint")) if a["id"] == "warehouse.orders" else a for a in cat["assets"]]}
+    f = {(x.asset, x.change): x for x in engine.score(cat2, b2)[0]}
+    wide = f[("warehouse.orders", "type_widened")]
+    assert wide.hazard == 0.2 and wide.risk < by[("warehouse.orders", "type_changed")].risk

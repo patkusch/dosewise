@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 DEFAULT_CONFIG = {
     "max_hops": 4,
     "hop_decay": 0.5,
-    "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2, "table_removed": 1.0},
+    "hazard_by_change": {"column_removed": 1.0, "type_changed": 0.8, "column_added": 0.2, "table_removed": 1.0, "type_widened": 0.2},
     "receptor_by_tag": {"pii": 2.0, "finance": 1.8, "executive": 1.5, "dashboard": 1.3},
     "receptor_by_domain": {"finance": 1.8, "customer": 1.5},
     "uncertainty_unknown_column_lineage": 0.5,
@@ -23,6 +23,8 @@ DEFAULT_CONFIG = {
     "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
     "monitor_fraction": 0.25,
     "exposure_floor": 0.3,
+    # old type, new type: changes that keep every existing value readable
+    "safe_type_changes": [["int", "bigint"], ["float", "double"], ["varchar", "text"], ["string", "text"]],
     "key_column_multiplier": 1.5,
     "uncertainty_no_owner": 0.5,
 }
@@ -51,7 +53,7 @@ def load(path):
         return json.load(f)
 
 
-def diff_schemas(baseline: dict, assets: dict):
+def diff_schemas(baseline: dict, assets: dict, safe=()):
     """Real changes only: what is different from the saved baseline."""
     out = []
     for aid, old in baseline.items():
@@ -64,7 +66,9 @@ def diff_schemas(baseline: dict, assets: dict):
         removed = sorted(set(old) - set(new))
         added = sorted(set(new) - set(old))
         retyped = sorted(c for c in set(old) & set(new) if old[c] != new[c])
-        for kind, cols in (("column_removed", removed), ("type_changed", retyped), ("column_added", added)):
+        wide = [c for c in retyped if [old[c], new[c]] in [list(x) for x in safe]]
+        retyped = [c for c in retyped if c not in wide]
+        for kind, cols in (("column_removed", removed), ("type_changed", retyped), ("type_widened", wide), ("column_added", added)):
             if cols:
                 out.append((aid, kind, cols, len(old)))
     return out
@@ -139,7 +143,7 @@ def score(catalog, baseline, cfg=None):
     assets = {a["id"]: a for a in catalog["assets"]}
     edges = catalog.get("edges", [])
     findings = []
-    for aid, kind, cols, ncols in diff_schemas(baseline, assets):
+    for aid, kind, cols, ncols in diff_schemas(baseline, assets, cfg["safe_type_changes"]):
         seen, unknown_edges = downstream(edges, aid, cfg["max_hops"], cols)
         dose = len(cols) / ncols
         hazard = cfg["hazard_by_change"][kind]
