@@ -60,6 +60,8 @@ The action line is not fitted to the data. It comes from a written reference cas
 
 ## Tests
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full set of checks.
+
 ```bash
 pip install pytest && python -m pytest
 ```

@@ -309,3 +309,10 @@ def test_json_output_has_every_key_the_doc_lists(tmp_path):
     rows = __import__("json").loads(out.read_text())
     doc = open(os.path.join(D, "..", "docs", "json-output.md")).read()
     assert rows and all(f"`{k}`" in doc for k in rows[0])
+
+
+def test_sample_catalog_matches_its_generator(tmp_path):
+    out = subprocess.run([sys.executable, "data/make_sample.py"], capture_output=True, text=True, cwd=os.path.join(D, ".."))
+    assert out.returncode == 0
+    r = subprocess.run(["git", "diff", "--quiet", "--", "data/catalog.json", "data/baseline.json"], cwd=os.path.join(D, ".."))
+    assert r.returncode == 0
