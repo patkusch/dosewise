@@ -298,3 +298,11 @@ def test_explain_lists_each_consumer_with_distance_and_usage():
     out = _cli("--explain", "warehouse.addresses").stdout
     assert "downstream: looker.address_map, 1 step(s) away, 600 queries a month" in out
     assert "no usage data" in _cli("--explain", "postgres.addresses").stdout
+
+
+def test_json_output_has_every_key_the_doc_lists(tmp_path):
+    out = tmp_path / "o.json"
+    assert _cli("--json", str(out)).returncode == 0
+    rows = __import__("json").loads(out.read_text())
+    doc = open(os.path.join(D, "..", "docs", "json-output.md")).read()
+    assert rows and all(f"`{k}`" in doc for k in rows[0])
