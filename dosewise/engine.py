@@ -46,6 +46,7 @@ class Finding:
     naive_rank: int = 0
     rank: int = 0
     reasons: list = field(default_factory=list)
+    consumers: list = field(default_factory=list)  # [asset, hops away, queries a month or null]
 
 
 def load(path):
@@ -198,7 +199,8 @@ def score(catalog, baseline, cfg=None):
         if unc > 1:
             reasons.append("filling in the missing evidence could move this up or down")
         findings.append(Finding(aid, kind, cols, hazard, round(dose, 4), round(exposure, 3), receptor,
-                                round(unc, 3), round(risk, 2), b, len(seen), reasons=reasons))
+                                round(unc, 3), round(risk, 2), b, len(seen), reasons=reasons,
+                                consumers=[[n, h, assets.get(n, {}).get("usage", {}).get("queries_30d")] for n, h in sorted(seen.items(), key=lambda x: (x[1], x[0]))]))
     # Standing issues (problems that were already there and have not changed) score zero.
     for a in catalog["assets"]:
         for issue in a.get("standing_issues", []):

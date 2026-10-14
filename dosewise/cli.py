@@ -58,6 +58,8 @@ def main(argv=None):
             sys.stdout.write(f"{f.asset} ({f.change}): risk {f.risk}, {f.band}\n")
             for r in f.reasons:
                 sys.stdout.write(f"  - {r}\n")
+            for n, h, q in f.consumers:
+                sys.stdout.write(f"  downstream: {n}, {h} step(s) away, " + (f"{q} queries a month" if q is not None else "no usage data") + "\n")
             sys.stdout.write(f"  hazard {f.hazard} x dose {f.dose} x exposure {f.exposure} x receptor {f.receptor} x uncertainty {f.uncertainty}\n")
         return 0
     shown = [f for f in findings if f.band in a.only.split(",")] if a.only else findings

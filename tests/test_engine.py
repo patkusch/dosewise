@@ -292,3 +292,9 @@ def test_a_large_catalog_scores_quickly():
     t0 = time.time()
     f, _ = engine.score({"assets": assets, "edges": edges}, baseline)
     assert len(f) == n and time.time() - t0 < 5
+
+
+def test_explain_lists_each_consumer_with_distance_and_usage():
+    out = _cli("--explain", "warehouse.addresses").stdout
+    assert "downstream: looker.address_map, 1 step(s) away, 600 queries a month" in out
+    assert "no usage data" in _cli("--explain", "postgres.addresses").stdout
