@@ -281,3 +281,14 @@ def test_non_ascii_table_names_survive_every_output(tmp_path):
                         "--html", str(tmp_path / "o.html"), "--csv", str(tmp_path / "o.csv"), "--json", str(tmp_path / "o.json")],
                        capture_output=True, text=True, encoding="utf-8", cwd=os.path.join(D, ".."))
     assert r.returncode == 0 and "café" in (tmp_path / "o.html").read_text(encoding="utf-8")
+
+
+def test_a_large_catalog_scores_quickly():
+    import time
+    n = 3000
+    assets = [{"id": f"t{i}", "schema": {"a": "int", "b": "int"}, "usage": {"queries_30d": i % 50}} for i in range(n)]
+    edges = [{"from": f"t{i}", "to": f"t{(i * 7 + 1) % n}"} for i in range(n)]
+    baseline = {a["id"]: {"a": "int", "b": "int", "c": "int"} for a in assets}
+    t0 = time.time()
+    f, _ = engine.score({"assets": assets, "edges": edges}, baseline)
+    assert len(f) == n and time.time() - t0 < 5

@@ -74,11 +74,15 @@ def diff_schemas(baseline: dict, assets: dict, safe=()):
     return out
 
 
-def downstream(edges, start, max_hops, touched):
-    """Breadth-first walk with the shortest hop count to each consumer."""
+def child_map(edges):
     children = {}
     for e in edges:
         children.setdefault(e["from"], []).append(e)
+    return children
+
+
+def downstream(children, start, max_hops, touched):
+    """Breadth-first walk with the shortest hop count to each consumer."""
     seen, queue, unknown_edges = {start: 0}, deque([(start, 0)]), 0
     while queue:
         node, hop = queue.popleft()
@@ -142,9 +146,10 @@ def score(catalog, baseline, cfg=None):
         raise ValueError(f"the same asset id appears more than once: {', '.join(dupes)}")
     assets = {a["id"]: a for a in catalog["assets"]}
     edges = catalog.get("edges", [])
+    children = child_map(edges)
     findings = []
     for aid, kind, cols, ncols in diff_schemas(baseline, assets, cfg["safe_type_changes"]):
-        seen, unknown_edges = downstream(edges, aid, cfg["max_hops"], cols)
+        seen, unknown_edges = downstream(children, aid, cfg["max_hops"], cols)
         dose = len(cols) / ncols
         hazard = cfg["hazard_by_change"][kind]
         keys = set(assets.get(aid, {}).get("key_columns", [])) & set(cols)
@@ -171,7 +176,7 @@ def score(catalog, baseline, cfg=None):
         unc = 1.0
         if seen:
             unc += cfg["uncertainty_unknown_usage"] * unmeasured / len(seen)
-            unc += cfg["uncertainty_unknown_column_lineage"] * unknown_edges / max(1, sum(1 for e in edges if e["from"] == aid))
+            unc += cfg["uncertainty_unknown_column_lineage"] * unknown_edges / max(1, len(children.get(aid, [])))
         a = assets.get(aid, {})
         if "owner" in a and not a["owner"]:
             unc += cfg["uncertainty_no_owner"]
@@ -197,7 +202,7 @@ def score(catalog, baseline, cfg=None):
     # Standing issues (problems that were already there and have not changed) score zero.
     for a in catalog["assets"]:
         for issue in a.get("standing_issues", []):
-            seen, _ = downstream(edges, a["id"], cfg["max_hops"], [])
+            seen, _ = downstream(children, a["id"], cfg["max_hops"], [])
             findings.append(Finding(a["id"], "standing:" + issue, [], 0, 0, 0, 1.0, 1.0, 0.0, "No Action",
                                     len(seen), reasons=["unchanged since the baseline, so nothing new has happened"]))
     for i, f in enumerate(sorted(findings, key=lambda f: (-f.naive_downstream, f.asset, f.change)), 1):
