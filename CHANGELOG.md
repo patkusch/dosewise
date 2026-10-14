@@ -1,5 +1,11 @@
 # Changes
 
+## 0.4.0
+- A widening type change (int to bigint) is scored as mild.
+- A removal next to an addition is flagged as a possible rename.
+- `--since` shows what is new, resolved or moved since an earlier `--json` run.
+- `docs/scoring.md` explains the score in plain English.
+
 ## 0.3.1
 - `--version` and `--top N`.
 - Duplicate asset ids are rejected; lineage that mentions an unknown table warns.
