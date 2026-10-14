@@ -153,6 +153,10 @@ def score(catalog, baseline, cfg=None):
         reasons = [f"{kind.replace('_', ' ')} on {len(cols)} of {ncols} columns ({dose:.0%})"]
         if keys:
             reasons.append(f"touches key column(s) {sorted(keys)}, which makes it worse")
+        if kind == "column_removed" and aid in assets:
+            fresh = set(assets[aid]["schema"]) - set(baseline[aid])
+            if len(fresh) >= len(cols):
+                reasons.append(f"{len(fresh)} column(s) were added in the same change, so this may be a rename")
         weighted, unmeasured, receptor = 0.0, 0, 1.0
         for node, hop in seen.items():
             q = assets.get(node, {}).get("usage", {}).get("queries_30d")

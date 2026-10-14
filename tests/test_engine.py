@@ -243,3 +243,10 @@ def test_a_widening_type_change_is_much_milder_than_a_breaking_one():
     f = {(x.asset, x.change): x for x in engine.score(cat2, b2)[0]}
     wide = f[("warehouse.orders", "type_widened")]
     assert wide.hazard == 0.2 and wide.risk < by[("warehouse.orders", "type_changed")].risk
+
+
+def test_a_removal_alongside_an_addition_is_flagged_as_a_possible_rename():
+    cat2 = {**cat, "assets": [dict(a, schema={**{k: v for k, v in a["schema"].items()}, "new_name": "string"}) if a["id"] == "warehouse.customers" else a for a in cat["assets"]]}
+    f = {(x.asset, x.change): x for x in engine.score(cat2, base)[0]}[("warehouse.customers", "column_removed")]
+    assert any("rename" in r for r in f.reasons)
+    assert not any("rename" in r for r in by[("warehouse.customers", "column_removed")].reasons)
