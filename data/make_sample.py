@@ -34,8 +34,11 @@ edges += [{"from": "postgres.addresses", "to": "postgres.stage_0"}]
 edges += [{"from": f"postgres.stage_{i}", "to": f"postgres.stage_{i+1}"} for i in range(5)]
 baseline = {a["id"]: dict(a["schema"]) for a in assets}
 def edit(aid, drop=(), retype=()):
-    for c in drop: del next(a for a in assets if a["id"] == aid)["schema"][c]
-    for c in retype: next(a for a in assets if a["id"] == aid)["schema"][c] = "int"
+    schema = next(a for a in assets if a["id"] == aid)["schema"]
+    for c in drop:
+        del schema[c]
+    for c in retype:
+        schema[c] = "int"
 edit("warehouse.addresses", drop=["c0", "c1"])
 edit("postgres.addresses", drop=["c0", "c1"])
 edit("warehouse.customers", drop=["c0", "c1"])

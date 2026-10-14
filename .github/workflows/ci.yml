@@ -11,5 +11,6 @@ jobs:
         with: {python-version: "${{ matrix.python-version }}"}
       - run: pip install pytest && python -m pytest -q
       - run: python -m dosewise --catalog data/catalog.json --baseline data/baseline.json
+      - run: pip install ruff && ruff check --isolated --select E,F,W --ignore E501 .
       - run: python -m compileall -q dosewise
       - run: python -m dosewise --catalog data/catalog.json --baseline data/baseline.json --format github --stability > /dev/null

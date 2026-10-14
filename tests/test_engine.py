@@ -1,4 +1,6 @@
-import json, os, subprocess, sys
+import os
+import subprocess
+import sys
 from dosewise import engine
 
 D = os.path.join(os.path.dirname(__file__), "..", "data")
@@ -163,7 +165,8 @@ def test_html_report_escapes_and_lists_every_finding(tmp_path):
 
 
 def test_package_version_matches_pyproject():
-    import dosewise, re
+    import dosewise
+    import re
     text = open(os.path.join(D, "..", "pyproject.toml")).read()
     assert re.search(rf'version = "{re.escape(dosewise.__version__)}"', text)
 
