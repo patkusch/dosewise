@@ -30,7 +30,7 @@ def main(argv=None):
             cat = engine.load(a.catalog)
         except FileNotFoundError as e:
             p.exit(2, f"dosewise: can't find {e.filename}\n")
-        with open(a.write_baseline, "w") as f:
+        with open(a.write_baseline, "w", encoding="utf-8") as f:
             json.dump({x["id"]: x["schema"] for x in cat["assets"]}, f, indent=1, sort_keys=True)
         return 0
     if not a.baseline:
@@ -70,7 +70,7 @@ def main(argv=None):
                 sys.stderr.write(f"dosewise: warning: lineage mentions {end}, which is not in the catalog\n")
     sys.stdout.write((report.github if a.format == "github" else report.markdown)(shown, ref))
     if a.json:
-        with open(a.json, "w") as f:
+        with open(a.json, "w", encoding="utf-8") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
     if a.since:
         try:
@@ -84,7 +84,7 @@ def main(argv=None):
             if f.risk > 0:
                 sys.stdout.write(f"- {f.asset} ({f.change}): {st[(f.asset, f.change)]:.0%}\n")
     if a.html:
-        with open(a.html, "w") as f:
+        with open(a.html, "w", encoding="utf-8") as f:
             f.write(report.html(findings, ref))
     if a.csv:
         report.write_csv(findings, a.csv)

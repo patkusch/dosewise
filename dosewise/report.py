@@ -28,7 +28,7 @@ def markdown(findings, ref):
 
 
 def write_csv(findings, path):
-    with open(path, "w", newline="") as f:
+    with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["rank", "naive_rank", "asset", "change", "risk", "band", "why"])
         for x in findings:

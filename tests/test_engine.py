@@ -269,3 +269,15 @@ def test_scoring_doc_matches_the_defaults():
     c = engine.DEFAULT_CONFIG
     assert str(c["exposure_floor"]) in text and str(c["key_column_multiplier"]) in text
     assert str(c["hazard_by_change"]["type_widened"]) in text and str(c["receptor_by_tag"]["pii"]) in text
+
+
+def test_non_ascii_table_names_survive_every_output(tmp_path):
+    odd = {"assets": [{"id": "dw.café", "schema": {"a": "int", "b": "int"}, "usage": {"queries_30d": 10}},
+                      {"id": "dw.übersicht", "schema": {"a": "int"}, "usage": {"queries_30d": 10}}],
+           "edges": [{"from": "dw.café", "to": "dw.übersicht"}]}
+    (tmp_path / "c.json").write_text(__import__("json").dumps(odd, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "b.json").write_text(__import__("json").dumps({"dw.café": {"a": "int", "b": "int", "c": "int"}, "dw.übersicht": {"a": "int"}}), encoding="utf-8")
+    r = subprocess.run([sys.executable, "-X", "utf8", "-m", "dosewise", "--catalog", str(tmp_path / "c.json"), "--baseline", str(tmp_path / "b.json"),
+                        "--html", str(tmp_path / "o.html"), "--csv", str(tmp_path / "o.csv"), "--json", str(tmp_path / "o.json")],
+                       capture_output=True, text=True, encoding="utf-8", cwd=os.path.join(D, ".."))
+    assert r.returncode == 0 and "café" in (tmp_path / "o.html").read_text(encoding="utf-8")
