@@ -61,3 +61,19 @@ def github(findings, ref):
             level = "error" if f.band == "Act" else "warning"
             out.append(f"::{level} title=Dosewise {f.band}::{f.asset} {f.change} risk {f.risk}. " + "; ".join(f.reasons))
     return "\n".join(out) + ("\n" if out else "")
+
+
+def since(findings, previous):
+    """What changed since an earlier --json result."""
+    old = {(x["asset"], x["change"]): x for x in previous}
+    new = {(f.asset, f.change): f for f in findings}
+    lines = ["", "## Since the last run", ""]
+    appeared = sorted(k for k in new if k not in old and new[k].risk > 0)
+    gone = sorted(k for k in old if k not in new and old[k]["risk"] > 0)
+    moved = sorted(k for k in new if k in old and new[k].band != old[k]["band"])
+    lines += [f"- new: {k[0]} ({k[1]}), {new[k].band}" for k in appeared]
+    lines += [f"- resolved: {k[0]} ({k[1]})" for k in gone]
+    lines += [f"- moved: {k[0]} ({k[1]}) {old[k]['band']} to {new[k].band}" for k in moved]
+    if len(lines) == 3:
+        lines.append("- nothing changed")
+    return "\n".join(lines) + "\n"

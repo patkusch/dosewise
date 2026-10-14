@@ -20,6 +20,7 @@ def main(argv=None):
     p.add_argument("--html", help="also write a single-page HTML report here")
     p.add_argument("--format", choices=["markdown", "github"], default="markdown", help="github prints Actions annotations")
     p.add_argument("--top", type=int, help="show only the N highest-risk findings")
+    p.add_argument("--since", metavar="JSON", help="compare with an earlier --json result and list what changed")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
@@ -71,6 +72,11 @@ def main(argv=None):
     if a.json:
         with open(a.json, "w") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
+    if a.since:
+        try:
+            sys.stdout.write(report.since(findings, engine.load(a.since)))
+        except FileNotFoundError as e:
+            p.exit(2, f"dosewise: can't find {e.filename}\n")
     if a.stability:
         st = engine.stability(engine.load(a.catalog), engine.load(a.baseline), cfg)
         sys.stdout.write("\n## Do the verdicts hold up?\n\nShare of weight changes (each weight made 1.5x bigger or smaller) that keep the same band:\n\n")

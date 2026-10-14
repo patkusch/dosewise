@@ -250,3 +250,15 @@ def test_a_removal_alongside_an_addition_is_flagged_as_a_possible_rename():
     f = {(x.asset, x.change): x for x in engine.score(cat2, base)[0]}[("warehouse.customers", "column_removed")]
     assert any("rename" in r for r in f.reasons)
     assert not any("rename" in r for r in by[("warehouse.customers", "column_removed")].reasons)
+
+
+def test_since_lists_new_resolved_and_moved_findings(tmp_path):
+    first = tmp_path / "first.json"
+    assert _cli("--json", str(first)).returncode == 0
+    same = _cli("--since", str(first)).stdout
+    assert "nothing changed" in same
+    healed = tmp_path / "b.json"
+    healed.write_text(__import__("json").dumps({a["id"]: a["schema"] for a in cat["assets"]}))
+    r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--baseline", str(healed), "--since", str(first)],
+                       capture_output=True, text=True, cwd=os.path.join(D, ".."))
+    assert "resolved: warehouse.customers" in r.stdout
