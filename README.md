@@ -45,7 +45,7 @@ No installs needed (standard library only). The sample catalog is invented. In i
 
 ## Using your own catalog
 
-The full input format and exit codes are in [docs/format.md](docs/format.md).
+The full input format and exit codes are in [docs/format.md](docs/format.md). How the score works is in [docs/scoring.md](docs/scoring.md).
 
 `catalog.json` holds `assets` (id, platform, `schema` of column name to type, `tags`, `usage.queries_30d` or null if unmeasured) and `edges` (`from` feeds `to`, with optional `columns` if you know which columns flow). `baseline.json` is the saved schema from the last good run. Keep it under version control so the result is the same every run.
 

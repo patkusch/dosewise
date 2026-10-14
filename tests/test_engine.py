@@ -262,3 +262,10 @@ def test_since_lists_new_resolved_and_moved_findings(tmp_path):
     r = subprocess.run([sys.executable, "-m", "dosewise", "--catalog", f"{D}/catalog.json", "--baseline", str(healed), "--since", str(first)],
                        capture_output=True, text=True, cwd=os.path.join(D, ".."))
     assert "resolved: warehouse.customers" in r.stdout
+
+
+def test_scoring_doc_matches_the_defaults():
+    text = open(os.path.join(D, "..", "docs", "scoring.md")).read()
+    c = engine.DEFAULT_CONFIG
+    assert str(c["exposure_floor"]) in text and str(c["key_column_multiplier"]) in text
+    assert str(c["hazard_by_change"]["type_widened"]) in text and str(c["receptor_by_tag"]["pii"]) in text
