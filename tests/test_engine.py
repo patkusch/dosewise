@@ -323,3 +323,8 @@ def test_ignored_tables_are_left_out_entirely():
     names = {x.asset for x in f}
     assert "warehouse.customers" not in names and "warehouse.promo_codes" not in names
     assert "warehouse.addresses" in names
+
+
+def test_min_risk_hides_the_quiet_findings():
+    out = _cli("--min-risk", "1.0").stdout
+    assert "warehouse.customers" in out and "warehouse.orders" not in out
