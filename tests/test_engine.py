@@ -349,3 +349,8 @@ def test_report_totals_risk_by_domain():
 
 def test_worked_example_is_the_real_output():
     assert _cli().stdout in open(os.path.join(D, "..", "docs", "example.md")).read()
+
+
+def test_naming_one_tag_keeps_the_other_default_weights():
+    m = engine.merge_config({"receptor_by_tag": {"pii": 3.0}})
+    assert m["receptor_by_tag"]["pii"] == 3.0 and m["receptor_by_tag"]["finance"] == 1.8

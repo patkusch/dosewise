@@ -133,6 +133,17 @@ def receptor_weight(asset, cfg):
     return w
 
 
+def merge_config(cfg):
+    """Your settings on top of the defaults. A table of weights is merged, so naming one tag keeps the rest."""
+    out = dict(DEFAULT_CONFIG)
+    for k, v in (cfg or {}).items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = {**out[k], **v}
+        else:
+            out[k] = v
+    return out
+
+
 def check_config(cfg):
     """Fail early and plainly on a typo, instead of silently ignoring it."""
     unknown = set(cfg) - set(DEFAULT_CONFIG)
@@ -146,7 +157,7 @@ def check_config(cfg):
 
 def score(catalog, baseline, cfg=None):
     check_config(cfg or {})
-    cfg = {**DEFAULT_CONFIG, **(cfg or {})}
+    cfg = merge_config(cfg)
     ids = [a["id"] for a in catalog["assets"]]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     if dupes:
@@ -238,7 +249,7 @@ def stability(catalog, baseline, cfg=None, factor=1.5):
     The weights are starting guesses, so a verdict that flips when one is nudged is a verdict to trust less.
     """
     import copy
-    cfg = {**DEFAULT_CONFIG, **(cfg or {})}
+    cfg = merge_config(cfg)
     base_f, _ = score(catalog, baseline, cfg)
     keys = [(g, k) for g in ("hazard_by_change", "receptor_by_tag") for k in cfg[g]] + [("hop_decay", None)]
     runs = 0
