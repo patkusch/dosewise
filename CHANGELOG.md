@@ -1,5 +1,13 @@
 # Changes
 
+## 0.6.0
+- `ignore` patterns in the config skip tables such as scratch copies.
+- `--min-risk` hides quiet findings.
+- An asset can state its own `sensitivity`.
+- Findings mention consumers whose use is rising.
+- The report totals risk by business domain.
+- `docs/example.md` shows real output and is checked by a test.
+
 ## 0.5.0
 - All files are read and written as UTF-8.
 - Lineage is looked up once, not once per finding (3,000 tables in well under a second).
