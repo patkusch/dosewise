@@ -354,3 +354,11 @@ def test_worked_example_is_the_real_output():
 def test_naming_one_tag_keeps_the_other_default_weights():
     m = engine.merge_config({"receptor_by_tag": {"pii": 3.0}})
     assert m["receptor_by_tag"]["pii"] == 3.0 and m["receptor_by_tag"]["finance"] == 1.8
+
+
+def test_bad_catalog_values_are_named():
+    import pytest
+    with pytest.raises(ValueError, match="cannot be negative"):
+        engine.score({"assets": [{"id": "x", "schema": {}, "usage": {"queries_30d": -1}}]}, {})
+    with pytest.raises(ValueError, match="schema must be"):
+        engine.score({"assets": [{"id": "x", "schema": ["a"]}]}, {})

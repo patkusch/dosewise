@@ -155,9 +155,19 @@ def check_config(cfg):
         raise ValueError("max_hops must be at least 1")
 
 
+def check_catalog(catalog):
+    for a in catalog["assets"]:
+        if not isinstance(a.get("schema"), dict):
+            raise ValueError(f"{a['id']}: schema must be a map of column name to type")
+        q = a.get("usage", {}).get("queries_30d")
+        if q is not None and q < 0:
+            raise ValueError(f"{a['id']}: queries_30d cannot be negative")
+
+
 def score(catalog, baseline, cfg=None):
     check_config(cfg or {})
     cfg = merge_config(cfg)
+    check_catalog(catalog)
     ids = [a["id"] for a in catalog["assets"]]
     dupes = sorted({i for i in ids if ids.count(i) > 1})
     if dupes:
