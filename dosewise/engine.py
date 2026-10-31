@@ -24,6 +24,7 @@ DEFAULT_CONFIG = {
     "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
     "monitor_fraction": 0.25,
     "exposure_floor": 0.3,
+    "growth_ratio": 1.5,
     "ignore": [],  # table id patterns to skip, e.g. "scratch.*"
     # old type, new type: changes that keep every existing value readable
     "safe_type_changes": [["int", "bigint"], ["float", "double"], ["varchar", "text"], ["string", "text"]],
@@ -172,12 +173,15 @@ def score(catalog, baseline, cfg=None):
             fresh = set(assets[aid]["schema"]) - set(baseline[aid])
             if len(fresh) >= len(cols):
                 reasons.append(f"{len(fresh)} column(s) were added in the same change, so this may be a rename")
-        weighted, unmeasured, receptor = 0.0, 0, 1.0
+        weighted, unmeasured, receptor, rising = 0.0, 0, 1.0, 0
         for node, hop in seen.items():
             q = assets.get(node, {}).get("usage", {}).get("queries_30d")
             if q is None:
                 unmeasured += 1
             else:
+                prev = assets.get(node, {}).get("usage", {}).get("queries_prev_30d")
+                if prev and q >= prev * cfg["growth_ratio"]:
+                    rising += 1
                 weighted += q * cfg["hop_decay"] ** (hop - 1)
             if node in assets:
                 receptor = max(receptor, receptor_weight(assets[node], cfg))
@@ -195,6 +199,8 @@ def score(catalog, baseline, cfg=None):
             reasons.append("nothing downstream reads the changed columns")
         else:
             reasons.append(f"{len(seen)} downstream, {weighted:.0f} weighted queries a month after distance decay")
+        if rising:
+            reasons.append(f"{rising} consumer(s) are queried at least {cfg['growth_ratio']}x more than the month before")
         if unmeasured:
             reasons.append(f"{unmeasured} consumer(s) have no usage data, which raises uncertainty rather than lowering risk")
         if receptor > 1:

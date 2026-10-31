@@ -332,3 +332,9 @@ def test_min_risk_hides_the_quiet_findings():
 
 def test_an_explicit_sensitivity_beats_the_tags():
     assert engine.receptor_weight({"id": "x", "tags": ["pii"], "sensitivity": 1.2}, engine.DEFAULT_CONFIG) == 1.2
+
+
+def test_rising_use_is_mentioned():
+    grown = {**cat, "assets": [dict(a, usage={"queries_30d": 3000, "queries_prev_30d": 1000}) if a["id"] == "looker.churn" else a for a in cat["assets"]]}
+    f = {(x.asset, x.change): x for x in engine.score(grown, base)[0]}[("warehouse.customers", "column_removed")]
+    assert any("more than the month before" in r for r in f.reasons)
