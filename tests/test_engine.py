@@ -312,10 +312,12 @@ def test_json_output_has_every_key_the_doc_lists(tmp_path):
 
 
 def test_sample_catalog_matches_its_generator(tmp_path):
-    out = subprocess.run([sys.executable, "data/make_sample.py"], capture_output=True, text=True, cwd=os.path.join(D, ".."))
-    assert out.returncode == 0
-    r = subprocess.run(["git", "diff", "--quiet", "--", "data/catalog.json", "data/baseline.json"], cwd=os.path.join(D, ".."))
-    assert r.returncode == 0
+    import shutil
+    (tmp_path / "data").mkdir()
+    shutil.copy(os.path.join(D, "make_sample.py"), tmp_path / "data")
+    assert subprocess.run([sys.executable, "data/make_sample.py"], cwd=tmp_path).returncode == 0
+    for name in ("catalog.json", "baseline.json"):
+        assert (tmp_path / "data" / name).read_text() == open(os.path.join(D, name)).read()
 
 
 def test_ignored_tables_are_left_out_entirely():
@@ -338,3 +340,8 @@ def test_rising_use_is_mentioned():
     grown = {**cat, "assets": [dict(a, usage={"queries_30d": 3000, "queries_prev_30d": 1000}) if a["id"] == "looker.churn" else a for a in cat["assets"]]}
     f = {(x.asset, x.change): x for x in engine.score(grown, base)[0]}[("warehouse.customers", "column_removed")]
     assert any("more than the month before" in r for r in f.reasons)
+
+
+def test_report_totals_risk_by_domain():
+    out = _cli().stdout
+    assert "## Risk by domain" in out and "- customer:" in out

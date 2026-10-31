@@ -21,6 +21,12 @@ def markdown(findings, ref):
             lines.append(f"**{f.asset}** ({f.change}, {f.band}): " + "; ".join(f.reasons) + ".")
             lines.append(f"  Hazard {f.hazard} x dose {f.dose} x exposure {f.exposure} x receptor {f.receptor} x uncertainty {f.uncertainty} = {f.risk}")
             lines.append("")
+    totals = {}
+    for f in findings:
+        if f.risk > 0:
+            totals[f.domain or "(no domain)"] = totals.get(f.domain or "(no domain)", 0) + f.risk
+    if totals:
+        lines += ["## Risk by domain", ""] + [f"- {d}: {r:.2f}" for d, r in sorted(totals.items(), key=lambda x: (-x[1], x[0]))] + [""]
     if zero:
         lines += ["## Scored zero", "", "These are real, but nothing about them changed, so they are not today's problem:", ""]
         lines += [f"- {f.asset}: {f.change.split(':')[-1]}" for f in zero]

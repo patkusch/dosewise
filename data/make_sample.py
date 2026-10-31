@@ -8,8 +8,8 @@ def t(n, **kw):
 assets = [
     t("warehouse.addresses", usage={"queries_30d": 2400}, tags=[]),
     t("postgres.addresses", usage={"queries_30d": 12}),
-    t("warehouse.customers", usage={"queries_30d": 5200}, tags=["pii"]),
-    t("warehouse.orders", usage={"queries_30d": 8000}, tags=["finance"]),
+    t("warehouse.customers", domain="customer", usage={"queries_30d": 5200}, tags=["pii"]),
+    t("warehouse.orders", domain="finance", usage={"queries_30d": 8000}, tags=["finance"]),
     t("warehouse.refunds", usage={"queries_30d": 300}),
     t("warehouse.web_events", usage={"queries_30d": 40}, owner=None),
 ]

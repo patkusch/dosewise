@@ -11,6 +11,7 @@
 | `band` | `Act`, `Monitor` or `No Action` |
 | `rank`, `naive_rank` | position by risk, and position by downstream count alone |
 | `naive_downstream` | how many consumers are downstream |
+| `domain` | the changed table's business domain, or empty |
 | `reasons` | the sentences shown in the report |
 | `consumers` | `[asset, steps away, queries a month or null]` for each consumer |
 

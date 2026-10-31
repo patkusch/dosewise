@@ -50,6 +50,7 @@
     "c7": "string",
     "c8": "string"
    },
+   "domain": "customer",
    "usage": {
     "queries_30d": 5200
    },
@@ -73,6 +74,7 @@
     "c7": "string",
     "c8": "string"
    },
+   "domain": "finance",
    "usage": {
     "queries_30d": 8000
    },
