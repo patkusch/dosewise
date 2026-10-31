@@ -29,6 +29,7 @@
 | `tags`, `domain`, `platform` | decide how sensitive the consumers are. |
 | `owner` | leave it out if you do not track owners. Include it empty if nobody owns the table: that raises uncertainty. |
 | `key_columns` | a change to these is worse. |
+| `sensitivity` | a number that replaces the tag, domain and platform guess for this consumer. |
 | `usage.queries_30d` | `null` means unmeasured, which raises uncertainty. `0` means measured and unused. |
 | `standing_issues` | problems that already existed. They score zero. |
 | edge `columns` | optional. If given, consumers that never read the changed columns are ignored. If left out, the consumer counts and uncertainty goes up. |

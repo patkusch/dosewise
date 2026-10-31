@@ -328,3 +328,7 @@ def test_ignored_tables_are_left_out_entirely():
 def test_min_risk_hides_the_quiet_findings():
     out = _cli("--min-risk", "1.0").stdout
     assert "warehouse.customers" in out and "warehouse.orders" not in out
+
+
+def test_an_explicit_sensitivity_beats_the_tags():
+    assert engine.receptor_weight({"id": "x", "tags": ["pii"], "sensitivity": 1.2}, engine.DEFAULT_CONFIG) == 1.2

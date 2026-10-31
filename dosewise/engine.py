@@ -120,6 +120,8 @@ def reference_score(cfg):
 
 
 def receptor_weight(asset, cfg):
+    if "sensitivity" in asset:
+        return float(asset["sensitivity"])  # you know better than the tags
     w = 1.0
     for t in asset.get("tags", []):
         w = max(w, cfg["receptor_by_tag"].get(t, 1.0))
