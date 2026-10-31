@@ -30,6 +30,10 @@ python3 -m dosewise --catalog data/catalog.json --baseline data/baseline.json
 
 No installs needed (standard library only). The sample catalog is invented. In it, two tables named `addresses` lose the same two columns. The one with six tables downstream that nobody queries ranks first by downstream count and fifth by real risk. A table people actually query, with personal data behind it, is the one that needs action.
 
+## Worked example
+
+The full output for the sample data is in [docs/example.md](docs/example.md).
+
 ## Options
 
 | flag | what it does |

@@ -345,3 +345,7 @@ def test_rising_use_is_mentioned():
 def test_report_totals_risk_by_domain():
     out = _cli().stdout
     assert "## Risk by domain" in out and "- customer:" in out
+
+
+def test_worked_example_is_the_real_output():
+    assert _cli().stdout in open(os.path.join(D, "..", "docs", "example.md")).read()
