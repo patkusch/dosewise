@@ -149,6 +149,9 @@ def check_config(cfg):
     unknown = set(cfg) - set(DEFAULT_CONFIG)
     if unknown:
         raise ValueError(f"unknown setting(s): {', '.join(sorted(unknown))}")
+    for pair in cfg.get("safe_type_changes", []):
+        if not (isinstance(pair, list) and len(pair) == 2):
+            raise ValueError("safe_type_changes must be a list of [old type, new type] pairs")
     if not 0 < cfg.get("hop_decay", 0.5) <= 1:
         raise ValueError("hop_decay must be above 0 and at most 1")
     if cfg.get("max_hops", 1) < 1:

@@ -362,3 +362,9 @@ def test_bad_catalog_values_are_named():
         engine.score({"assets": [{"id": "x", "schema": {}, "usage": {"queries_30d": -1}}]}, {})
     with pytest.raises(ValueError, match="schema must be"):
         engine.score({"assets": [{"id": "x", "schema": ["a"]}]}, {})
+
+
+def test_safe_type_changes_must_be_pairs():
+    import pytest
+    with pytest.raises(ValueError, match="pairs"):
+        engine.score(cat, base, {"safe_type_changes": [["int"]]})
