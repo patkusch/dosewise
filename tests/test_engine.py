@@ -368,3 +368,8 @@ def test_safe_type_changes_must_be_pairs():
     import pytest
     with pytest.raises(ValueError, match="pairs"):
         engine.score(cat, base, {"safe_type_changes": [["int"]]})
+
+
+def test_quiet_prints_one_line():
+    r = _cli("--quiet", "--fail-on", "Act")
+    assert r.stdout.strip() == "dosewise: Act 1, Monitor 3, No Action 5" and r.returncode == 1

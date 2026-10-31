@@ -20,6 +20,7 @@ def main(argv=None):
     p.add_argument("--html", help="also write a single-page HTML report here")
     p.add_argument("--format", choices=["markdown", "github"], default="markdown", help="github prints Actions annotations")
     p.add_argument("--min-risk", type=float, help="hide findings below this risk score")
+    p.add_argument("--quiet", action="store_true", help="print one summary line instead of the report")
     p.add_argument("--top", type=int, help="show only the N highest-risk findings")
     p.add_argument("--since", metavar="JSON", help="compare with an earlier --json result and list what changed")
     p.add_argument("--csv", help="also write a spreadsheet-friendly CSV here")
@@ -73,7 +74,10 @@ def main(argv=None):
         for end in (e["from"], e["to"]):
             if end not in cat_ids:
                 sys.stderr.write(f"dosewise: warning: lineage mentions {end}, which is not in the catalog\n")
-    sys.stdout.write((report.github if a.format == "github" else report.markdown)(shown, ref))
+    if a.quiet:
+        sys.stdout.write("dosewise: " + ", ".join(f"{b} {sum(f.band == b for f in findings)}" for b in ("Act", "Monitor", "No Action")) + "\n")
+    else:
+        sys.stdout.write((report.github if a.format == "github" else report.markdown)(shown, ref))
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
