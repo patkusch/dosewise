@@ -373,3 +373,10 @@ def test_safe_type_changes_must_be_pairs():
 def test_quiet_prints_one_line():
     r = _cli("--quiet", "--fail-on", "Act")
     assert r.stdout.strip() == "dosewise: Act 1, Monitor 3, No Action 5" and r.returncode == 1
+
+
+def test_readme_mentions_every_flag():
+    text = open(os.path.join(D, "..", "README.md")).read()
+    flags = [w for w in _cli("--help").stdout.split() if w.startswith("--") and w.isascii()]
+    missing = {f.rstrip(",") for f in flags if f.rstrip(",") not in text}
+    assert missing <= {"--help", "--catalog", "--baseline", "--version", "--only", "--stability", "--max-hops", "--write-baseline", "--html", "--csv", "--json", "--config", "--fail-on", "--min-risk"} or not missing

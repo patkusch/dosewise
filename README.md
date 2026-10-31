@@ -41,6 +41,10 @@ The full output for the sample data is in [docs/example.md](docs/example.md).
 | `--fail-on Act` | exit 1 if anything needs action, so a pipeline can stop |
 | `--only Act,Monitor` | show only those bands |
 | `--stability` | check how many weight changes would flip each verdict |
+| `--quiet` | one summary line instead of the report |
+| `--min-risk N`, `--top N` | hide quiet findings, or keep only the top N |
+| `--since JSON` | list what is new, resolved or moved since an earlier `--json` run |
+| `--format github` | print CI annotations |
 | `--explain ASSET` | full breakdown for one asset |
 | `--max-hops N` | how far to follow lineage (default 4) |
 | `--write-baseline FILE` | save the current schemas as your first baseline |
@@ -59,7 +63,7 @@ The action line is not fitted to the data. It comes from a written reference cas
 
 - It has only been run on the invented sample, never on a real catalog.
 - Lineage is followed four steps and no further.
-- Weights are starting guesses, set in `DEFAULT_CONFIG` and meant to be tuned.
+- Weights are starting guesses (naming one tag in your config keeps the other defaults), set in `DEFAULT_CONFIG` and meant to be tuned.
 - There is no language model. Every number comes from arithmetic you can read.
 
 ## Tests
