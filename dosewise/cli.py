@@ -41,7 +41,9 @@ def main(argv=None):
         cfg = engine.load(a.config) if a.config else None
         if a.max_hops is not None:
             cfg = {**(cfg or {}), "max_hops": a.max_hops}
-        findings, ref = engine.score(engine.load(a.catalog), engine.load(a.baseline), cfg)
+        catalog = engine.load(a.catalog)
+        baseline = engine.load(a.baseline)
+        findings, ref = engine.score(catalog, baseline, cfg)
     except FileNotFoundError as e:
         p.exit(2, f"dosewise: can't find {e.filename}\n")
     except ValueError as e:
@@ -69,8 +71,8 @@ def main(argv=None):
         shown = [f for f in shown if f.risk >= a.min_risk]
     if a.top:
         shown = shown[: a.top]
-    cat_ids = {x["id"] for x in engine.load(a.catalog)["assets"]}
-    for e in engine.load(a.catalog).get("edges", []):
+    cat_ids = {x["id"] for x in catalog["assets"]}
+    for e in catalog.get("edges", []):
         for end in (e["from"], e["to"]):
             if end not in cat_ids:
                 sys.stderr.write(f"dosewise: warning: lineage mentions {end}, which is not in the catalog\n")
@@ -87,7 +89,7 @@ def main(argv=None):
         except FileNotFoundError as e:
             p.exit(2, f"dosewise: can't find {e.filename}\n")
     if a.stability:
-        st = engine.stability(engine.load(a.catalog), engine.load(a.baseline), cfg)
+        st = engine.stability(catalog, baseline, cfg)
         sys.stdout.write("\n## Do the verdicts hold up?\n\nShare of weight changes (each weight made 1.5x bigger or smaller) that keep the same band:\n\n")
         for f in shown:
             if f.risk > 0:
