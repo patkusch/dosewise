@@ -4,6 +4,7 @@ Risk = Hazard x Exposure x Receptor sensitivity x Uncertainty
 """
 from __future__ import annotations
 
+import fnmatch
 import json
 import math
 from collections import deque
@@ -23,6 +24,7 @@ DEFAULT_CONFIG = {
     "reference_case": {"hazard": 1.0, "dose": 0.25, "queries": 1000, "receptor": 2.0, "uncertainty": 1.0},
     "monitor_fraction": 0.25,
     "exposure_floor": 0.3,
+    "ignore": [],  # table id patterns to skip, e.g. "scratch.*"
     # old type, new type: changes that keep every existing value readable
     "safe_type_changes": [["int", "bigint"], ["float", "double"], ["varchar", "text"], ["string", "text"]],
     "key_column_multiplier": 1.5,
@@ -149,7 +151,12 @@ def score(catalog, baseline, cfg=None):
     edges = catalog.get("edges", [])
     children = child_map(edges)
     findings = []
+    def skipped(aid):
+        return any(fnmatch.fnmatch(aid, pat) for pat in cfg["ignore"])
+
     for aid, kind, cols, ncols in diff_schemas(baseline, assets, cfg["safe_type_changes"]):
+        if skipped(aid):
+            continue
         seen, unknown_edges = downstream(children, aid, cfg["max_hops"], cols)
         dose = len(cols) / ncols
         hazard = cfg["hazard_by_change"][kind]
@@ -203,6 +210,8 @@ def score(catalog, baseline, cfg=None):
                                 consumers=[[n, h, assets.get(n, {}).get("usage", {}).get("queries_30d")] for n, h in sorted(seen.items(), key=lambda x: (x[1], x[0]))]))
     # Standing issues (problems that were already there and have not changed) score zero.
     for a in catalog["assets"]:
+        if skipped(a["id"]):
+            continue
         for issue in a.get("standing_issues", []):
             seen, _ = downstream(children, a["id"], cfg["max_hops"], [])
             findings.append(Finding(a["id"], "standing:" + issue, [], 0, 0, 0, 1.0, 1.0, 0.0, "No Action",

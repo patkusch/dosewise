@@ -316,3 +316,10 @@ def test_sample_catalog_matches_its_generator(tmp_path):
     assert out.returncode == 0
     r = subprocess.run(["git", "diff", "--quiet", "--", "data/catalog.json", "data/baseline.json"], cwd=os.path.join(D, ".."))
     assert r.returncode == 0
+
+
+def test_ignored_tables_are_left_out_entirely():
+    f, _ = engine.score(cat, base, {"ignore": ["warehouse.cust*", "warehouse.promo_*"]})
+    names = {x.asset for x in f}
+    assert "warehouse.customers" not in names and "warehouse.promo_codes" not in names
+    assert "warehouse.addresses" in names
