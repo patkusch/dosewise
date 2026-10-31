@@ -1,5 +1,11 @@
 # Changes
 
+## 0.7.0
+- Naming one tag in a config keeps the other default weights.
+- Bad catalog values and a malformed safe-type list are named in the error.
+- `--quiet` prints one summary line.
+- The catalog and baseline are read once per run.
+
 ## 0.6.0
 - `ignore` patterns in the config skip tables such as scratch copies.
 - `--min-risk` hides quiet findings.
