@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "dosewise"
+abstract: "Ranks data-quality problems by who is actually affected, so the ones that need a person today come first."
+type: software
+authors:
+  - family-names: "Kusch"
+    given-names: "Patricia"
+repository-code: "https://github.com/patkusch/dosewise"
+license: MIT
