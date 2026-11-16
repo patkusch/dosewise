@@ -29,7 +29,7 @@ def markdown(findings, ref):
         lines += ["## Risk by domain", ""] + [f"- {d}: {r:.2f}" for d, r in sorted(totals.items(), key=lambda x: (-x[1], x[0]))] + [""]
     if zero:
         lines += ["## Scored zero", "", "These are real, but nothing about them changed, so they are not today's problem:", ""]
-        lines += [f"- {f.asset}: {f.change.split(':')[-1]}" for f in zero]
+        lines += [f"- {f.asset}: {f.change.split(':')[-1].strip()}" for f in zero]
     return "\n".join(lines) + "\n"
 
 
