@@ -52,6 +52,8 @@ The full output for the sample data is in [docs/example.md](docs/example.md).
 | `--write-baseline FILE` | save the current schemas as your first baseline |
 | `--html FILE`, `--csv FILE`, `--json FILE` | also write the results to a file |
 | `--config FILE` | override the scoring settings |
+| `--from-dbt MANIFEST` | build the catalog from a dbt `target/manifest.json` instead of `--catalog` |
+| `--dbt-catalog FILE` | with `--from-dbt`: types from `dbt docs generate`'s `catalog.json` |
 
 ## Using your own catalog
 
@@ -61,9 +63,26 @@ The full input format and exit codes are in [docs/format.md](docs/format.md). Ho
 
 The action line is not fitted to the data. It comes from a written reference case in `dosewise/engine.py` (a quarter of columns removed, 1,000 queries a month one step away, personal data, nothing missing). Change that case to match your own idea of "worth waking someone for".
 
+## From dbt
+
+If your tables are dbt models, you do not have to write a catalog by hand. Point it at a manifest:
+
+```bash
+python3 -m dosewise --from-dbt target/manifest.json --write-baseline base.json   # first run
+python3 -m dosewise --from-dbt target/manifest.json --baseline base.json         # every run after
+```
+
+Models, sources and snapshots become assets (id is the dbt `unique_id`), and `depends_on` becomes
+lineage. Column types come from the columns you declare in YAML, or from
+`dbt docs generate`'s `target/catalog.json` if you pass `--dbt-catalog`, which is what makes a
+type change visible. Per-table settings come from `meta`: `owner`, `domain`, `sensitivity`,
+`queries_30d`, `queries_prev_30d`, `key_columns` and `standing_issues`. Lineage from a dbt manifest
+does not say which columns flow, so consumers of a change raise uncertainty rather than being
+filtered out: add `columns` to an edge in a hand-written catalog when you know.
+
 ## What it does not do
 
-- It has only been run on the invented sample, never on a real catalog.
+- The sample here is invented, and the dbt importer is tested against fixtures rather than a live project.
 - Lineage is followed four steps and no further.
 - Weights are starting guesses (naming one tag in your config keeps the other defaults), set in `DEFAULT_CONFIG` and meant to be tuned.
 - There is no language model. Every number comes from arithmetic you can read.

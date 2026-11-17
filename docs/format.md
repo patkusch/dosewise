@@ -35,6 +35,41 @@
 | `standing_issues` | problems that already existed. They score zero. |
 | edge `columns` | optional. If given, consumers that never read the changed columns are ignored. If left out, the consumer counts and uncertainty goes up. |
 
+## From dbt
+
+`--from-dbt manifest.json` builds the catalog from dbt instead of a hand-written file, so the
+baseline is a set of schemas taken from a manifest rather than from your catalog:
+
+```bash
+python3 -m dosewise --from-dbt target/manifest.json --write-baseline base.json
+python3 -m dosewise --from-dbt target/manifest.json --baseline base.json
+```
+
+| dbt | becomes |
+|---|---|
+| a `model`, `source` or `snapshot` node | one asset, id = the node's `unique_id` |
+| `depends_on.nodes` | an edge `from` parent `to` child, when both are tables above |
+| declared `columns` (`data_type`), or measured types from `--dbt-catalog` | the asset's `schema` |
+| `tags` and `config.tags` | `tags` |
+| `meta.owner` | `owner` (missing = owners are not tracked, `null` or `""` = nobody owns it) |
+| `meta.domain`, or the node's `group` | `domain` |
+| `meta.sensitivity` | `sensitivity` |
+| `meta.queries_30d`, `meta.queries_prev_30d` | `usage` |
+| `meta.key_columns`, `meta.standing_issues` | the same fields |
+
+Tests, seeds, macros and exposures are not tables, so they are left out. Types are lowercased,
+because a warehouse reports `INTEGER` where the YAML says `integer` and a change of case is not a
+change of type.
+
+`--dbt-catalog target/catalog.json` (from `dbt docs generate`) supplies the columns and types the
+warehouse really has, which is what a type change needs. Pass it on every run, not just the first:
+a baseline saved with measured types compared against a manifest that only has declared ones still
+shows the type differences, because "unknown" is not "varchar". A column nobody described, in
+neither the YAML nor the catalog, is `unknown`.
+
+dbt's lineage does not say which columns flow, so every consumer counts and the finding says the
+evidence is incomplete. A hand-written catalog can be more precise with `columns` on an edge.
+
 ## baseline.json
 
 Column name to type for every table, as last saved. Make one with `--write-baseline`.
