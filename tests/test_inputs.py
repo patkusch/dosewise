@@ -239,3 +239,28 @@ def test_a_json_result_missing_a_key_the_report_needs_is_named(tmp_path):
     r = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
              "--since", _write(tmp_path, "half.json", [{"asset": "a", "change": "column_added"}]))
     assert r.returncode == 2 and "each with asset, band, change, risk" in r.stderr
+
+
+# --- github annotations ---------------------------------------------------
+
+def test_github_annotations_escape_their_own_data():
+    # Workflow command data must escape %, CR and LF. Every reason here carries a percentage
+    # ("2 of 9 columns (22%)"), and %0A in the middle of it is decoded as a newline by Actions.
+    out = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+               "--format", "github").stdout
+    assert out.count("::error") == 1 and "%" in out
+    stripped = out.replace("%25", "").replace("%0D", "").replace("%0A", "")
+    assert "%" not in stripped
+    assert out.count("\n") == out.count("::error") + out.count("::warning")
+
+
+def test_a_table_name_cannot_break_out_of_an_annotation(tmp_path):
+    odd = {"assets": [{"id": "a::b%0Ainjected", "schema": {"c": "int"}},
+                      {"id": "down", "schema": {"c": "int"}, "usage": {"queries_30d": 5000}, "tags": ["pii"]}],
+           "edges": [{"from": "a::b%0Ainjected", "to": "down"}]}
+    r = _run("--catalog", _write(tmp_path, "c.json", odd),
+             "--baseline", _write(tmp_path, "b.json", {"a::b%0Ainjected": {"c": "int", "d": "int"}}),
+             "--format", "github")
+    assert r.returncode == 0
+    assert "%250A" in r.stdout and "%0A" not in r.stdout.replace("%250A", "")
+    assert r.stdout.count("\n") == 1

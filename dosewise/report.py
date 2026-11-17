@@ -59,13 +59,25 @@ td,th{{padding:.4rem .6rem;border-bottom:1px solid #8884;text-align:left;vertica
 """
 
 
+def annotation_data(text):
+    """Escape a value for a GitHub Actions workflow command.
+
+    The command is one line ending at the first newline, and % starts an escape sequence, so
+    a message carrying either is truncated or decoded into something else: every reason here
+    contains a percentage, and a table id is user input.
+    """
+    return str(text).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
 def github(findings, ref):
     """GitHub Actions annotations: Act shows as an error, Monitor as a warning."""
     out = []
     for f in findings:
         if f.band in ("Act", "Monitor"):
             level = "error" if f.band == "Act" else "warning"
-            out.append(f"::{level} title=Dosewise {f.band}::{f.asset} {f.change} risk {f.risk}. " + "; ".join(f.reasons))
+            title = annotation_data(f"Dosewise {f.band}")
+            message = annotation_data(f"{f.asset} {f.change} risk {f.risk}. " + "; ".join(f.reasons))
+            out.append(f"::{level} title={title}::{message}")
     return "\n".join(out) + ("\n" if out else "")
 
 
