@@ -1,5 +1,7 @@
 # Dosewise
 
+[![ci](https://github.com/patkusch/dosewise/actions/workflows/ci.yml/badge.svg)](https://github.com/patkusch/dosewise/actions/workflows/ci.yml)
+
 Data quality tools find hundreds of problems and mark them all critical, so people stop reading. Dosewise ranks them the way a toxicologist would: a break only matters in proportion to who is actually exposed to it.
 
 Inspired by the idea behind [Paracelsus](https://devpost.com/software/paracelsus) (a DataHub hackathon project). This is an independent, standalone rebuild of the idea. It reads a plain JSON file, so there is no catalog to install and nothing to sign up for.
