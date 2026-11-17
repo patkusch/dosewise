@@ -155,3 +155,42 @@ def test_a_bad_catalog_from_a_file_is_exit_2_without_a_traceback(tmp_path):
 
 def test_the_shipped_config_example_still_validates():
     engine.check_config(engine.load(f"{D}/config.example.json"))
+
+
+# --- tables the baseline knows nothing about ------------------------------
+
+def test_a_first_harvest_from_a_tool_that_lists_no_columns_does_not_divide_by_zero():
+    # A catalog built from dbt's manifest, or a warehouse the client could not describe,
+    # has tables whose saved schema is an empty map. Adding columns to one of those used to
+    # end the whole run with ZeroDivisionError, because dose is columns over saved columns.
+    catalog = {"assets": [{"id": "raw.orders", "schema": {"id": "int", "total": "int"}},
+                          {"id": "dash.revenue", "schema": {"total": "int"}, "usage": {"queries_30d": 4000}}],
+               "edges": [{"from": "raw.orders", "to": "dash.revenue"}]}
+    found = engine.score(catalog, {"raw.orders": {}})[0]
+    (f,) = [x for x in found if x.change == "column_added"]
+    assert f.dose == 1.0 and f.risk > 0
+    assert "no saved columns" in f.reasons[0]
+
+
+def test_removing_a_table_with_no_saved_columns_crashed_and_now_reaches_its_consumers():
+    catalog = {"assets": [{"id": "dash.revenue", "schema": {"total": "int"}, "usage": {"queries_30d": 4000}}],
+               "edges": [{"from": "raw.orders", "to": "dash.revenue", "columns": ["total"]}]}
+    (f,) = [x for x in engine.score(catalog, {"raw.orders": {}})[0] if x.asset == "raw.orders"]
+    assert f.change == "table_removed" and f.dose == 1.0
+    # Column-level lineage must not hide the dashboard: the whole table is gone, not one column.
+    assert f.naive_downstream == 1
+    assert f.risk > 0
+
+
+def test_a_table_that_is_new_since_the_baseline_is_not_a_finding():
+    catalog = {"assets": [{"id": "new.thing", "schema": {"a": "int"}}]}
+    assert not [f for f in engine.score(catalog, {})[0] if not f.change.startswith("standing:")]
+
+
+def test_a_baseline_written_from_a_catalog_with_an_empty_schema_is_quiet(tmp_path):
+    catalog = _write(tmp_path, "c.json", {"assets": [{"id": "raw.orders", "schema": {}},
+                                                     {"id": "raw.users", "schema": {"id": "int"}}]})
+    base = str(tmp_path / "b.json")
+    assert _run("--catalog", catalog, "--write-baseline", base).returncode == 0
+    r = _run("--catalog", catalog, "--baseline", base, "--quiet")
+    assert r.returncode == 0 and "Act 0" in r.stdout and "Traceback" not in r.stderr

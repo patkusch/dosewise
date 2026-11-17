@@ -86,16 +86,21 @@ def child_map(edges):
     return children
 
 
-def downstream(children, start, max_hops, touched):
-    """Breadth-first walk with the shortest hop count to each consumer."""
+def downstream(children, start, max_hops, touched=None):
+    """Breadth-first walk with the shortest hop count to each consumer.
+
+    `touched` is the set of columns that changed. None means every column counts (a removed table,
+    or a standing issue that is not about one column), so column-level lineage does not filter.
+    """
     seen, queue, unknown_edges = {start: 0}, deque([(start, 0)]), 0
+    touched = None if touched is None else set(touched)
     while queue:
         node, hop = queue.popleft()
         if hop >= max_hops:
             continue
         for e in children.get(node, []):
             cols = e.get("columns")
-            if hop == 0 and cols is not None and not set(cols) & set(touched):
+            if hop == 0 and touched is not None and cols is not None and not set(cols) & touched:
                 continue  # column-level lineage says this consumer never reads the changed columns
             if e["to"] in seen:
                 continue
@@ -272,13 +277,20 @@ def score(catalog, baseline, cfg=None):
     for aid, kind, cols, ncols in diff_schemas(baseline, assets, cfg["safe_type_changes"]):
         if skipped(aid):
             continue
-        seen, unknown_edges = downstream(children, aid, cfg["max_hops"], cols)
-        dose = len(cols) / ncols
+        # A removed table reaches every consumer, whatever columns its edges name.
+        seen, unknown_edges = downstream(children, aid, cfg["max_hops"], None if kind == "table_removed" else cols)
+        if ncols:
+            dose = len(cols) / ncols
+            reasons = [f"{kind.replace('_', ' ')} on {len(cols)} of {ncols} columns ({dose:.0%})"]
+        else:
+            # The saved schema had no columns for this table, so there is no share to take:
+            # whatever is known about the table changed.
+            dose = 1.0
+            reasons = [f"{kind.replace('_', ' ')} on a table with no saved columns, so it counts as the whole table"]
         hazard = cfg["hazard_by_change"][kind]
         keys = set(assets.get(aid, {}).get("key_columns", [])) & set(cols)
         if keys:
             hazard *= cfg["key_column_multiplier"]
-        reasons = [f"{kind.replace('_', ' ')} on {len(cols)} of {ncols} columns ({dose:.0%})"]
         if keys:
             reasons.append(f"touches key column(s) {sorted(keys)}, which makes it worse")
         if kind == "column_removed" and aid in assets:
@@ -333,7 +345,7 @@ def score(catalog, baseline, cfg=None):
         if skipped(a["id"]):
             continue
         for issue in a.get("standing_issues", []):
-            seen, _ = downstream(children, a["id"], cfg["max_hops"], [])
+            seen, _ = downstream(children, a["id"], cfg["max_hops"])
             findings.append(Finding(a["id"], "standing:" + issue, [], 0, 0, 0, 1.0, 1.0, 0.0, "No Action",
                                     len(seen), reasons=["unchanged since the baseline, so nothing new has happened"]))
     for i, f in enumerate(sorted(findings, key=lambda f: (-f.naive_downstream, f.asset, f.change)), 1):
