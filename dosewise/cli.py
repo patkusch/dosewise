@@ -3,7 +3,7 @@ import dataclasses
 import json
 import sys
 
-from . import __version__, engine, report
+from . import __version__, dbt, engine, report
 
 BANDS = ("Act", "Monitor", "No Action")
 PREVIOUS_KEYS = {"asset", "change", "risk", "band"}
@@ -25,6 +25,18 @@ def parse_bands(text):
     return picked
 
 
+def load_catalog(a):
+    """The catalog file, or one built from dbt artifacts. Exactly one source is required."""
+    if bool(a.catalog) == bool(a.from_dbt):
+        raise ValueError("pass --catalog or --from-dbt, not both")
+    if a.dbt_catalog and not a.from_dbt:
+        raise ValueError("--dbt-catalog only makes sense with --from-dbt")
+    if not a.from_dbt:
+        return engine.load(a.catalog)
+    manifest = engine.load(a.from_dbt)
+    return dbt.catalog_from_manifest(manifest, engine.load(a.dbt_catalog) if a.dbt_catalog else None)
+
+
 def load_previous(path):
     """An earlier --json result. Anything else is named, because the report reads four keys from it."""
     data = engine.load(path)
@@ -37,7 +49,9 @@ def load_previous(path):
 def main(argv=None):
     p = argparse.ArgumentParser(prog="dosewise", description=__doc__)
     p.add_argument("--version", action="version", version=f"dosewise {__version__}")
-    p.add_argument("--catalog", required=True, help="catalog JSON: assets and lineage edges")
+    p.add_argument("--catalog", help="catalog JSON: assets and lineage edges")
+    p.add_argument("--from-dbt", metavar="MANIFEST", help="build the catalog from a dbt manifest.json instead of --catalog")
+    p.add_argument("--dbt-catalog", metavar="CATALOG", help="a dbt target/catalog.json for measured column types; use it with --from-dbt")
     p.add_argument("--baseline", required=False, help="saved schema baseline JSON")
     p.add_argument("--config", help="optional JSON overriding the scoring settings")
     p.add_argument("--only", help="show only these bands, e.g. Act,Monitor (the exit code still looks at everything)")
@@ -59,9 +73,14 @@ def main(argv=None):
         p.exit(2, "dosewise: --top must be at least 1, or the report would be empty\n")
     if a.write_baseline:
         try:
-            cat = engine.load(a.catalog)
+            cat = load_catalog(a)
+            engine.check_catalog(cat)
         except FileNotFoundError as e:
             p.exit(2, f"dosewise: can't find {e.filename}\n")
+        except ValueError as e:
+            if isinstance(e, json.JSONDecodeError):
+                p.exit(2, f"dosewise: that file is not valid JSON ({e})\n")
+            p.exit(2, f"dosewise: {e}\n")
         with open(a.write_baseline, "w", encoding="utf-8") as f:
             json.dump({x["id"]: x["schema"] for x in cat["assets"]}, f, indent=1, sort_keys=True)
         return 0
@@ -71,7 +90,7 @@ def main(argv=None):
         cfg = engine.load(a.config) if a.config else None
         if a.max_hops is not None:
             cfg = {**(cfg or {}), "max_hops": a.max_hops}
-        catalog = engine.load(a.catalog)
+        catalog = load_catalog(a)
         baseline = engine.load(a.baseline)
         findings, ref = engine.score(catalog, baseline, cfg)
     except FileNotFoundError as e:

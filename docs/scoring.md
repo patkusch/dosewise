@@ -4,7 +4,9 @@ One finding is one change to one table, compared with the saved baseline.
 
 **Hazard** is how bad that kind of change is. Removing a column or a table is 1.0. Changing a type so values no longer fit is 0.8. A type change that keeps every value (int to bigint) is 0.2, the same as adding a column. Touching a key column multiplies this by 1.5.
 
-**Dose** is the share of the table's columns the change touches.
+**Dose** is the share of the table's columns the change touches. When the saved baseline has no
+columns for a table at all (a first harvest, a client that cannot describe it), there is no share to
+take and the change counts as the whole table.
 
 **Exposure** is how much the tables downstream are queried. Each one counts its monthly queries, halved for every step away. The total is squashed with a logarithm so one huge table does not drown the rest. If anything is downstream, exposure never drops below 0.3, because "nobody measured it" is not "nobody uses it".
 
@@ -16,4 +18,4 @@ Multiply the five and you have the risk. Problems that were already there score 
 
 **Bands** come from a written reference case: a quarter of the columns removed, 1,000 queries a month one step away, personal data, nothing missing. At or above its score is Act. At or above a quarter of it is Monitor. Anything below is No Action.
 
-Every number is a starting guess. `--stability` shows how many verdicts survive changing each weight by half, and `--config` lets you set your own.
+Every number is a starting guess. `--stability` shows how many verdicts survive changing each weight by half: every weight a score is made of, so the hazard and receptor tables, the domain weights, the key-column multiplier, the hop decay, the exposure floor and the three uncertainty penalties. `growth_ratio` only changes the wording of a reason, and `monitor_fraction` and the reference case move the band line for every finding at once, so those three are not counted. `--config` lets you set your own.
