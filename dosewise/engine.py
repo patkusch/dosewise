@@ -355,26 +355,46 @@ def score(catalog, baseline, cfg=None):
     return sorted(findings, key=lambda f: f.rank), reference_score(cfg)
 
 
+# Every single-number weight that enters a score. growth_ratio only changes the wording of a reason,
+# and monitor_fraction and reference_case move the band line for every finding at once: nudging one
+# of those answers a different question, so they are left out and the docstring says so.
+NUDGED_SCALARS = ("hop_decay", "exposure_floor", "key_column_multiplier",
+                  "uncertainty_unknown_column_lineage", "uncertainty_unknown_usage", "uncertainty_no_owner")
+# A nudge must stay inside the range the setting is allowed to hold, or the perturbed config
+# would be refused by check_config.
+NUDGE_LIMITS = {"hop_decay": (1e-6, 1.0), "exposure_floor": (0.0, None)}
+
+
+def weight_keys(cfg):
+    """Every weight that enters a score, as (table, name) pairs with name None for a single number."""
+    return [(table, name) for table in WEIGHT_TABLES for name in cfg[table]] + [(name, None) for name in NUDGED_SCALARS]
+
+
 def stability(catalog, baseline, cfg=None, factor=1.5):
     """How often does each finding keep its band when one weight at a time is made 1.5x bigger or smaller?
 
     The weights are starting guesses, so a verdict that flips when one is nudged is a verdict to trust less.
+    Every weight the score is made of moves: hazard and receptor tables, domain weights, key columns,
+    hop decay, the exposure floor and the three uncertainty penalties.
     """
     import copy
     cfg = merge_config(cfg)
     base_f, _ = score(catalog, baseline, cfg)
-    keys = [(g, k) for g in ("hazard_by_change", "receptor_by_tag") for k in cfg[g]] + [("hop_decay", None)]
+    base_bands = {(f.asset, f.change): f.band for f in base_f}
+    same = {key: 0 for key in base_bands}
     runs = 0
-    same = {(f.asset, f.change): 0 for f in base_f}
-    for g, k in keys:
+    for table, name in weight_keys(cfg):
         for m in (factor, 1 / factor):
             c = copy.deepcopy(cfg)
-            if k is None:
-                c[g] = min(0.99, c[g] * m)
+            if name is None:
+                low, high = NUDGE_LIMITS.get(table, (0.0, None))
+                nudged = c[table] * m
+                c[table] = min(high, nudged) if high is not None else nudged
+                c[table] = max(low, c[table])
             else:
-                c[g][k] *= m
+                c[table][name] *= m
             runs += 1
             for f in score(catalog, baseline, c)[0]:
-                if f.band == next(b.band for b in base_f if (b.asset, b.change) == (f.asset, f.change)):
+                if f.band == base_bands[(f.asset, f.change)]:
                     same[(f.asset, f.change)] += 1
     return {k: v / runs for k, v in same.items()}

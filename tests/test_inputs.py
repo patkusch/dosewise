@@ -10,6 +10,7 @@ from dosewise import engine
 
 D = os.path.join(os.path.dirname(__file__), "..", "data")
 cat, base = engine.load(f"{D}/catalog.json"), engine.load(f"{D}/baseline.json")
+F_ALL = engine.score(cat, base)[0]
 
 
 def _run(*args):
@@ -264,3 +265,42 @@ def test_a_table_name_cannot_break_out_of_an_annotation(tmp_path):
     assert r.returncode == 0
     assert "%250A" in r.stdout and "%0A" not in r.stdout.replace("%250A", "")
     assert r.stdout.count("\n") == 1
+
+
+# --- stability ------------------------------------------------------------
+
+def test_stability_nudges_every_weight_the_score_is_made_of():
+    keys = engine.weight_keys(engine.merge_config(None))
+    assert len(keys) == 17  # 5 hazards + 4 tags + 2 domains + 6 single numbers
+    assert ("receptor_by_domain", "customer") in keys
+    assert ("key_column_multiplier", None) in keys
+    assert ("uncertainty_no_owner", None) in keys
+    # These shape the report or the band line, not one finding's score.
+    assert ("growth_ratio", None) not in keys and ("monitor_fraction", None) not in keys
+    assert ("reference_case", None) not in keys and ("ignore", None) not in keys
+
+
+def test_a_verdict_that_hangs_on_a_domain_weight_now_shows_it():
+    # Exposure 1.71 x dose 0.5 x the domain's 1.5, plus the +0.5 for lineage that does not say
+    # which columns flow: 1.92, just over the 1.50 action line. Only the domain weight holds it
+    # there, and a domain weight was the kind --stability never touched.
+    catalog = {"assets": [{"id": "src", "schema": {"a": "int", "b": "int"}},
+                          {"id": "report", "schema": {"a": "int"}, "domain": "customer",
+                           "usage": {"queries_30d": 50}}],
+               "edges": [{"from": "src", "to": "report"}]}
+    base = {"src": {"a": "int", "b": "int", "c": "string", "d": "string"}}
+    (f,) = [x for x in engine.score(catalog, base)[0] if x.asset == "src"]
+    assert f.band == "Act" and 1.5 <= f.risk < 2.25
+    assert engine.stability(catalog, base)[("src", "column_removed")] < 1.0
+
+
+def test_stability_keeps_a_weight_inside_its_allowed_range_at_the_edge():
+    # hop_decay 0.9 nudged 1.5x would be 1.35, which check_config refuses: it is clamped instead.
+    st = engine.stability(cat, base, {"hop_decay": 0.9})
+    assert st and all(0 <= v <= 1 for v in st.values())
+
+
+def test_stability_still_reports_every_finding_once():
+    st = engine.stability(cat, base)
+    assert set(st) == {(f.asset, f.change) for f in F_ALL}
+    assert all(st[(f.asset, f.change)] == 1.0 for f in F_ALL if f.change.startswith("standing:"))
