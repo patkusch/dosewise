@@ -194,3 +194,48 @@ def test_a_baseline_written_from_a_catalog_with_an_empty_schema_is_quiet(tmp_pat
     assert _run("--catalog", catalog, "--write-baseline", base).returncode == 0
     r = _run("--catalog", catalog, "--baseline", base, "--quiet")
     assert r.returncode == 0 and "Act 0" in r.stdout and "Traceback" not in r.stderr
+
+
+# --- flags ----------------------------------------------------------------
+
+def test_top_below_one_is_refused_instead_of_being_ignored():
+    # `--top 0` is falsy, so the limit was never applied and the full report came out;
+    # `--top -1` sliced off the last finding instead of the first.
+    for value in ("0", "-1"):
+        r = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json", "--top", value)
+        assert r.returncode == 2 and "--top must be at least 1" in r.stderr
+        assert "Traceback" not in r.stderr
+
+
+def test_only_matches_bands_without_case():
+    quiet = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json", "--only", "act", "--quiet")
+    assert quiet.returncode == 0 and quiet.stderr == ""
+    assert "warehouse.customers" in _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+                                         "--only", "act,monitor").stdout
+
+
+def test_an_unknown_band_is_one_warning_per_run_not_one_per_finding():
+    r = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json", "--only", "act,Nope")
+    assert r.returncode == 0 and r.stderr.count("Nope is not a band") == 1
+    assert "Nothing to show." in _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+                                      "--only", "Nope").stdout
+
+
+def test_since_refuses_a_file_that_is_not_an_earlier_json_result(tmp_path):
+    same = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+                "--since", _write(tmp_path, "baseline.json", base))
+    assert same.returncode == 2 and "is not an earlier --json result" in same.stderr
+    assert "Traceback" not in same.stderr
+    listed = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+                  "--since", _write(tmp_path, "list.json", ["a"]))
+    assert listed.returncode == 2 and "is not an earlier --json result" in listed.stderr
+    broken = tmp_path / "broken.json"
+    broken.write_text("{oops", encoding="utf-8")
+    bad = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json", "--since", str(broken))
+    assert bad.returncode == 2 and "not valid JSON" in bad.stderr and "Traceback" not in bad.stderr
+
+
+def test_a_json_result_missing_a_key_the_report_needs_is_named(tmp_path):
+    r = _run("--catalog", f"{D}/catalog.json", "--baseline", f"{D}/baseline.json",
+             "--since", _write(tmp_path, "half.json", [{"asset": "a", "change": "column_added"}]))
+    assert r.returncode == 2 and "each with asset, band, change, risk" in r.stderr

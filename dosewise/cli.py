@@ -5,6 +5,34 @@ import sys
 
 from . import __version__, engine, report
 
+BANDS = ("Act", "Monitor", "No Action")
+PREVIOUS_KEYS = {"asset", "change", "risk", "band"}
+
+
+def parse_bands(text):
+    """The bands the user named, matched without case, with an unknown name reported.
+
+    `--only act` used to print an empty report and exit 0, which reads as "nothing needs action".
+    """
+    picked = []
+    for raw in text.split(","):
+        name = raw.strip()
+        match = next((b for b in BANDS if b.lower() == name.lower()), None)
+        if match is None:
+            sys.stderr.write(f"dosewise: warning: {name or '(nothing)'} is not a band, choose from {', '.join(BANDS)}\n")
+        elif match not in picked:
+            picked.append(match)
+    return picked
+
+
+def load_previous(path):
+    """An earlier --json result. Anything else is named, because the report reads four keys from it."""
+    data = engine.load(path)
+    wanted = ", ".join(sorted(PREVIOUS_KEYS))
+    if not isinstance(data, list) or not all(isinstance(x, dict) and PREVIOUS_KEYS <= set(x) for x in data):
+        raise ValueError(f"{path} is not an earlier --json result: expected a list of findings, each with {wanted}")
+    return data
+
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="dosewise", description=__doc__)
@@ -27,6 +55,8 @@ def main(argv=None):
     p.add_argument("--json", help="also write results here")
     p.add_argument("--fail-on", choices=["Act", "Monitor"], help="exit 1 if any finding reaches this band (for CI)")
     a = p.parse_args(argv)
+    if a.top is not None and a.top < 1:
+        p.exit(2, "dosewise: --top must be at least 1, or the report would be empty\n")
     if a.write_baseline:
         try:
             cat = engine.load(a.catalog)
@@ -66,7 +96,11 @@ def main(argv=None):
                 sys.stdout.write(f"  downstream: {n}, {h} step(s) away, " + (f"{q} queries a month" if q is not None else "no usage data") + "\n")
             sys.stdout.write(f"  hazard {f.hazard} x dose {f.dose} x exposure {f.exposure} x receptor {f.receptor} x uncertainty {f.uncertainty}\n")
         return 0
-    shown = [f for f in findings if f.band in a.only.split(",")] if a.only else findings
+    if a.only is None:
+        shown = findings
+    else:
+        bands = parse_bands(a.only)  # parsed once: a typo is one warning, not one per finding
+        shown = [f for f in findings if f.band in bands]
     if a.min_risk is not None:
         shown = [f for f in shown if f.risk >= a.min_risk]
     if a.top:
@@ -85,9 +119,14 @@ def main(argv=None):
             json.dump([dataclasses.asdict(x) for x in findings], f, indent=2, sort_keys=True)
     if a.since:
         try:
-            sys.stdout.write(report.since(findings, engine.load(a.since)))
+            previous = load_previous(a.since)
         except FileNotFoundError as e:
             p.exit(2, f"dosewise: can't find {e.filename}\n")
+        except json.JSONDecodeError as e:
+            p.exit(2, f"dosewise: {a.since} is not valid JSON ({e})\n")
+        except ValueError as e:
+            p.exit(2, f"dosewise: {e}\n")
+        sys.stdout.write(report.since(findings, previous))
     if a.stability:
         st = engine.stability(catalog, baseline, cfg)
         sys.stdout.write("\n## Do the verdicts hold up?\n\nShare of weight changes (each weight made 1.5x bigger or smaller) that keep the same band:\n\n")
