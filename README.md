@@ -75,3 +75,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full set of checks.
 ```bash
 pip install pytest && python -m pytest
 ```
+
+---
+
+[Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
