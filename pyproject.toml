@@ -15,3 +15,9 @@ dosewise = "dosewise.cli:main"
 
 [tool.setuptools]
 packages = ["dosewise"]
+
+[project.urls]
+Homepage = "https://github.com/patkusch/dosewise"
+Repository = "https://github.com/patkusch/dosewise"
+Issues = "https://github.com/patkusch/dosewise/issues"
+Changelog = "https://github.com/patkusch/dosewise/blob/main/CHANGELOG.md"
