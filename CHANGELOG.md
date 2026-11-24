@@ -1,5 +1,8 @@
 # Changes
 
+## Unreleased
+- The "scored zero" list no longer shows a stray double space when a change has a note after a colon.
+
 ## 0.7.0
 - Naming one tag in a config keeps the other default weights.
 - Bad catalog values and a malformed safe-type list are named in the error.
